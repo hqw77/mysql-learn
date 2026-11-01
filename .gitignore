@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+
+# 虚拟环境
+.venv/
+venv/
+env/
+
+# 本地配置（真实密码只放这里，绝不提交）
+.env
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# 数据库导出文件
+*.sql.gz
+*.dump
