@@ -1,1 +1,6 @@
+fastapi>=0.115
+uvicorn[standard]>=0.32
+SQLAlchemy>=2.0
 PyMySQL>=1.1.0
+cryptography>=42
+pydantic-settings>=2.6
