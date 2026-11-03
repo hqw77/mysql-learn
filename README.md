@@ -31,6 +31,9 @@ mysql-learning/
 │   └── legacy/             # 最早的 PyMySQL 用户管理系统（教程第二章的改造对象）
 ├── sql/                    # 独立 SQL 脚本
 ├── notes/                  # 学习笔记
+│   ├── ch01/               # 第一章：MySQL 进阶基础（阶段0 ~ 阶段7）
+│   ├── 第二章 -- Python 数据库连接池.md
+│   └── Python + MySQL 进阶实战教程.md
 ├── tests/                  # 自动化测试
 ├── .env.example
 └── requirements.txt
@@ -76,14 +79,14 @@ curl http://127.0.0.1:8000/health/db   # 数据库连通 + 版本
 
 | 阶段 | 主题 | 笔记 | 代码 |
 | --- | --- | --- | --- |
-| 0 | 环境搭建与连通 | [阶段0](notes/阶段0%20--%20环境搭建与连通.md) | `practice/phase0/` |
-| 1 | 单表 CRUD 与基础查询 | [阶段1](notes/阶段1%20--%20单表%20CRUD%20与基础查询.md) | `practice/phase1/` |
-| 2 | 建表进阶 | [阶段2](notes/阶段2%20--%20建表进阶.md) | `practice/phase2/` |
-| 3 | 多表查询与 JOIN | [阶段3](notes/阶段3%20--%20多表查询与%20JOIN.md) | `practice/phase3/` |
-| 4 | 事务与并发控制 | [阶段4](notes/阶段%204：事务与并发控制.md) | `practice/phase4/` |
-| 5 | 索引与性能优化 | [阶段5](notes/阶段5%20--%20索引与性能优化.md) | `practice/phase5/` |
-| 6 | 数据库设计（范式与建模） | [阶段6](notes/阶段6%20--%20数据库设计（范式与建模）.md) | `practice/phase6/` |
-| 7 | 运维与架构 | [阶段7](notes/阶段7%20--%20运维与架构.md) | — |
+| 0 | 环境搭建与连通 | [阶段0](notes/ch01/阶段0%20--%20环境搭建与连通.md) | `practice/phase0/` |
+| 1 | 单表 CRUD 与基础查询 | [阶段1](notes/ch01/阶段1%20--%20单表%20CRUD%20与基础查询.md) | `practice/phase1/` |
+| 2 | 建表进阶 | [阶段2](notes/ch01/阶段2%20--%20建表进阶.md) | `practice/phase2/` |
+| 3 | 多表查询与 JOIN | [阶段3](notes/ch01/阶段3%20--%20多表查询与%20JOIN.md) | `practice/phase3/` |
+| 4 | 事务与并发控制 | [阶段4](notes/ch01/阶段%204：事务与并发控制.md) | `practice/phase4/` |
+| 5 | 索引与性能优化 | [阶段5](notes/ch01/阶段5%20--%20索引与性能优化.md) | `practice/phase5/` |
+| 6 | 数据库设计（范式与建模） | [阶段6](notes/ch01/阶段6%20--%20数据库设计（范式与建模）.md) | `practice/phase6/` |
+| 7 | 运维与架构 | [阶段7](notes/ch01/阶段7%20--%20运维与架构.md) | — |
 
 进阶实战路线见 [Python + MySQL 进阶实战教程](notes/Python%20+%20MySQL%20进阶实战教程.md)。
 
@@ -91,7 +94,7 @@ curl http://127.0.0.1:8000/health/db   # 数据库连通 + 版本
 
 | 章 | 主题 | 笔记 | 代码 |
 | --- | --- | --- | --- |
-| 1 | MySQL 进阶基础（索引 / JOIN / 事务 / 锁） | [阶段2](notes/阶段2%20--%20建表进阶.md) ~ [阶段5](notes/阶段5%20--%20索引与性能优化.md) | `practice/phase2/` ~ `practice/phase5/` |
+| 1 | MySQL 进阶基础（索引 / JOIN / 事务 / 锁） | [阶段2](notes/ch01/阶段2%20--%20建表进阶.md) ~ [阶段5](notes/ch01/阶段5%20--%20索引与性能优化.md) | `practice/phase2/` ~ `practice/phase5/` |
 | 2 | Python 数据库连接池 | [第二章](notes/第二章%20--%20Python%20数据库连接池.md) | `practice/ch02-pool/` |
 | 3 | SQLAlchemy ORM 基础 | 待写 | `app/models/` |
 
