@@ -87,6 +87,14 @@ curl http://127.0.0.1:8000/health/db   # 数据库连通 + 版本
 
 进阶实战路线见 [Python + MySQL 进阶实战教程](notes/Python%20+%20MySQL%20进阶实战教程.md)。
 
+### 进阶实战章节
+
+| 章 | 主题 | 笔记 | 代码 |
+| --- | --- | --- | --- |
+| 1 | MySQL 进阶基础（索引 / JOIN / 事务 / 锁） | [阶段2](notes/阶段2%20--%20建表进阶.md) ~ [阶段5](notes/阶段5%20--%20索引与性能优化.md) | `practice/phase2/` ~ `practice/phase5/` |
+| 2 | Python 数据库连接池 | [第二章](notes/第二章%20--%20Python%20数据库连接池.md) | `practice/ch02-pool/` |
+| 3 | SQLAlchemy ORM 基础 | 待写 | `app/models/` |
+
 ## 安全说明
 
 - 所有数据库凭据一律通过环境变量 / `.env` 传入，仓库内**不含任何密码**。
