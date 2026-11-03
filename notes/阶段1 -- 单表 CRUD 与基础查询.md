@@ -1,5 +1,5 @@
-## <font style="color:rgb(15, 17, 21);">1. 准备工作：建库建表</font>
-<font style="color:rgb(15, 17, 21);">首先，我们得有一张表用来练手。打开终端，确保你连上了 MySQL（</font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">mysql -u root -p</font>`<font style="color:rgb(15, 17, 21);">），或者在 VS Code 的 Database Client 插件里执行以下 SQL。</font>
+## 1. 准备工作：建库建表
+首先，我们得有一张表用来练手。打开终端，确保你连上了 MySQL（`mysql -u root -p`），或者在 VS Code 的 Database Client 插件里执行以下 SQL。
 
 ```plain
 -- 创建数据库（如果不存在）并指定字符集
@@ -18,14 +18,14 @@ CREATE TABLE students (
 );
 ```
 
-_<font style="color:rgb(15, 17, 21);">(建好后，可以在终端敲 </font>_`_<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">DESC students;</font>_`_<font style="color:rgb(15, 17, 21);"> 看看表结构)</font>_
+_(建好后，可以在终端敲 _`_DESC students;_`_ 看看表结构)_
 
 ![](https://cdn.nlark.com/yuque/0/2026/png/54927389/1793544829453-8084a806-3acf-4df7-bf85-af6f4d9b3e5d.png)
 
-## <font style="color:rgb(15, 17, 21);">2. 核心 SQL 语法（要背熟）</font>
-<font style="color:rgb(15, 17, 21);">打开你项目里的 </font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">sql/01-crud.sql</font>`<font style="color:rgb(15, 17, 21);">，把这些基础语法敲一遍并执行：</font>
+## 2. 核心 SQL 语法（要背熟）
+打开你项目里的 `sql/01-crud.sql`，把这些基础语法敲一遍并执行：
 
-**<font style="color:rgb(15, 17, 21);">增 (INSERT)</font>**
+**增 (INSERT)**
 
 ```plain
 -- 插入单条（指定所有列）
@@ -38,7 +38,7 @@ INSERT INTO students (name, age, score) VALUES ('王五', 21, 78.0), ('赵六', 
 
 ![](https://cdn.nlark.com/yuque/0/2026/png/54927389/1793544846632-f0a7a48f-1a12-47fb-b677-8c68158030f0.png)
 
-**<font style="color:rgb(15, 17, 21);">查 (SELECT)</font>**
+**查 (SELECT)**
 
 ```plain
 -- 查所有
@@ -51,7 +51,7 @@ SELECT * FROM students ORDER BY score DESC LIMIT 2;
 
 ![](https://cdn.nlark.com/yuque/0/2026/png/54927389/1793544946568-ae5fdeb6-013c-4c7b-bd59-21bbb0e43e3c.png)
 
-**<font style="color:rgb(15, 17, 21);">改 (UPDATE)</font>**
+**改 (UPDATE)**
 
 ```plain
 -- 把张三的分数改成 90（一定要带 WHERE，否则全表都被改）
@@ -60,7 +60,7 @@ UPDATE students SET score = 90.0 WHERE name = '张三';
 
 ![](https://cdn.nlark.com/yuque/0/2026/png/54927389/1793544984675-6376ec4a-3fe2-4284-acb7-58faaebe8652.png)
 
-**<font style="color:rgb(15, 17, 21);">删 (DELETE)</font>**
+**删 (DELETE)**
 
 ```plain
 -- 删除名字叫李四的记录（同样一定要带 WHERE）
@@ -69,8 +69,8 @@ DELETE FROM students WHERE name = '李四';
 
 ![](https://cdn.nlark.com/yuque/0/2026/png/54927389/1793545002427-6111de69-118d-4f7e-968b-11e5b7ea082f.png)
 
-## <font style="color:rgb(15, 17, 21);">3. Python 实战（PyMySQL）</font>
-<font style="color:rgb(15, 17, 21);">现在，打开 </font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">practice/phase1/crud_basics.py</font>`<font style="color:rgb(15, 17, 21);">，开始写真正的后端代码。</font>
+## 3. Python 实战（PyMySQL）
+现在，打开 `practice/phase1/crud_basics.py`，开始写真正的后端代码。
 
 ```plain
 import pymysql
@@ -129,13 +129,13 @@ finally:
 
 ![](https://cdn.nlark.com/yuque/0/2026/png/54927389/1793545223367-85e39a87-1c8b-4a8c-afe4-286d72768481.png)
 
-## <font style="color:rgb(15, 17, 21);">4. Python + PyMySQL 核心操作</font>
-### <font style="color:rgb(15, 17, 21);">4.1 默认元组游标 vs 字典游标</font>
-+ **<font style="color:rgb(15, 17, 21);">默认游标</font>**<font style="color:rgb(15, 17, 21);">：</font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">fetchone()</font>`<font style="color:rgb(15, 17, 21);"> 返回 </font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">(1, '张三', 20, 85.5, datetime.datetime(...))</font>`<font style="color:rgb(15, 17, 21);">。取值靠下标，非常不直观。</font>
-+ **<font style="color:rgb(15, 17, 21);">字典游标（推荐）</font>**<font style="color:rgb(15, 17, 21);">：</font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">fetchall()</font>`<font style="color:rgb(15, 17, 21);"> 返回 </font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">[{'id': 1, 'name': '张三', 'age': 20, ...}]</font>`<font style="color:rgb(15, 17, 21);">。取值靠键名（</font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">stu['name']</font>`<font style="color:rgb(15, 17, 21);">），代码可读性极强。</font>
+## 4. Python + PyMySQL 核心操作
+### 4.1 默认元组游标 vs 字典游标
++ **默认游标**：`fetchone()` 返回 `(1, '张三', 20, 85.5, datetime.datetime(...))`。取值靠下标，非常不直观。
++ **字典游标（推荐）**：`fetchall()` 返回 `[{'id': 1, 'name': '张三', 'age': 20, ...}]`。取值靠键名（`stu['name']`），代码可读性极强。
 
-### <font style="color:rgb(15, 17, 21);">4.2 防 SQL 注入（占位符）</font>
-<font style="color:rgb(15, 17, 21);">无论传入的是字符串、数字还是日期，PyMySQL 的占位符统一使用 </font>`**<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">%s</font>**`<font style="color:rgb(15, 17, 21);">（不要加引号）。</font>
+### 4.2 防 SQL 注入（占位符）
+无论传入的是字符串、数字还是日期，PyMySQL 的占位符统一使用 `%s`（不要加引号）。
 
 ```plain
 # 正确写法
@@ -145,28 +145,28 @@ cur.execute("SELECT * FROM students WHERE age = %s AND score > %s", (20, 80))
 cur.execute(f"SELECT * FROM students WHERE age = {age}")
 ```
 
-### <font style="color:rgb(15, 17, 21);">4.3 事务提交（</font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">commit</font>`<font style="color:rgb(15, 17, 21);">）</font>
-<font style="color:rgb(15, 17, 21);">在 PyMySQL 中，</font>**<font style="color:rgb(15, 17, 21);">默认是不自动提交事务的</font>**<font style="color:rgb(15, 17, 21);">。</font>
+### 4.3 事务提交（`commit`）
+在 PyMySQL 中，**默认是不自动提交事务的**。
 
-+ <font style="color:rgb(15, 17, 21);">执行 </font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">INSERT</font>`<font style="color:rgb(15, 17, 21);">、</font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">UPDATE</font>`<font style="color:rgb(15, 17, 21);">、</font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">DELETE</font>`<font style="color:rgb(15, 17, 21);"> 后，</font>**<font style="color:rgb(15, 17, 21);">必须调用 </font>**`**<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">conn.commit()</font>**`<font style="color:rgb(15, 17, 21);">，数据才会真正写入数据库。</font>
-+ <font style="color:rgb(15, 17, 21);">如果发生了异常，可以调用 </font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">conn.rollback()</font>`<font style="color:rgb(15, 17, 21);"> 撤销。</font>
++ 执行 `INSERT`、`UPDATE`、`DELETE` 后，**必须调用 **`conn.commit()`，数据才会真正写入数据库。
++ 如果发生了异常，可以调用 `conn.rollback()` 撤销。
 
-### <font style="color:rgb(15, 17, 21);">4.4 获取自增 ID</font>
-<font style="color:rgb(15, 17, 21);">插入一条数据后，可以通过 </font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">cur.lastrowid</font>`<font style="color:rgb(15, 17, 21);"> 获取刚插入那行数据的主键 ID。</font>
+### 4.4 获取自增 ID
+插入一条数据后，可以通过 `cur.lastrowid` 获取刚插入那行数据的主键 ID。
 
-## <font style="color:rgb(15, 17, 21);">5. 阶段 1 进阶任务（验收作业）</font>
-<font style="color:rgb(15, 17, 21);">光是跑通上面的代码不够，你现在需要独立完成以下任务。</font>
+## 5. 阶段 1 进阶任务（验收作业）
+光是跑通上面的代码不够，你现在需要独立完成以下任务。
 
-<font style="color:rgb(15, 17, 21);">打开 </font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">practice/phase1/student_manager.py</font>`<font style="color:rgb(15, 17, 21);">，用 PyMySQL 写一个</font>**<font style="color:rgb(15, 17, 21);">控制台交互版的学生管理系统</font>**<font style="color:rgb(15, 17, 21);">：</font>
+打开 `practice/phase1/student_manager.py`，用 PyMySQL 写一个**控制台交互版的学生管理系统**：
 
-1. <font style="color:rgb(15, 17, 21);">程序启动时，给用户显示菜单（1. 录入学生；2. 查看所有学生；3. 修改分数；4. 删除学生；5. 退出）。</font>
-2. <font style="color:rgb(15, 17, 21);">用户选择 1，提示用户输入姓名、年龄、分数，用代码插入数据库。</font>
-3. <font style="color:rgb(15, 17, 21);">用户选择 2，用 DictCursor 查出来，优雅地打印成表格。</font>
-4. <font style="color:rgb(15, 17, 21);">用户选择 3，提示输入学生名字和新分数，执行 UPDATE。</font>
-5. <font style="color:rgb(15, 17, 21);">用户选择 4，提示输入学生名字，执行 DELETE。</font>
-6. <font style="color:rgb(15, 17, 21);">用 </font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">while True:</font>`<font style="color:rgb(15, 17, 21);"> 让程序一直循环，直到用户选择 5 才退出并关闭连接。</font>
+1. 程序启动时，给用户显示菜单（1. 录入学生；2. 查看所有学生；3. 修改分数；4. 删除学生；5. 退出）。
+2. 用户选择 1，提示用户输入姓名、年龄、分数，用代码插入数据库。
+3. 用户选择 2，用 DictCursor 查出来，优雅地打印成表格。
+4. 用户选择 3，提示输入学生名字和新分数，执行 UPDATE。
+5. 用户选择 4，提示输入学生名字，执行 DELETE。
+6. 用 `while True:` 让程序一直循环，直到用户选择 5 才退出并关闭连接。
 
-_<font style="color:rgb(15, 17, 21);">(提示：每次增删改之后，千万不要忘记 </font>_`_<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">conn.commit()</font>_`_<font style="color:rgb(15, 17, 21);">)</font>_
+_(提示：每次增删改之后，千万不要忘记 _`_conn.commit()_`_)_
 
 ```plain
 import pymysql
@@ -289,11 +289,11 @@ if __name__ == "__main__":
 
 ![](https://cdn.nlark.com/yuque/0/2026/png/54927389/1793545421185-34905b38-b738-4baf-afd1-84f10773a49b.png)
 
-## <font style="color:rgb(15, 17, 21);">6. 踩坑复盘记录</font>
-1. `**<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">mysql: command not found</font>**`<font style="color:rgb(15, 17, 21);">：终端没识别到 MySQL 命令，需将 </font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">bin</font>`<font style="color:rgb(15, 17, 21);"> 路径加入系统环境变量并</font>**<font style="color:rgb(15, 17, 21);">重启 VS Code</font>**<font style="color:rgb(15, 17, 21);">。</font>
-2. `**<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">UnicodeEncodeError: 'latin-1' codec can't encode...</font>**`<font style="color:rgb(15, 17, 21);">：PyMySQL 默认用拉丁编码处理密码，如果 root 密码里有中文就会报错。解决：在连接时加上 </font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">charset="utf8mb4"</font>`<font style="color:rgb(15, 17, 21);">，或者将 root 密码改为纯英文/数字。</font>
-3. **<font style="color:rgb(15, 17, 21);">查询结果是元组</font>**<font style="color:rgb(15, 17, 21);">：默认游标是元组，一定要用 </font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">from pymysql.cursors import DictCursor</font>`<font style="color:rgb(15, 17, 21);"> 配合 </font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">conn.cursor(cursor=DictCursor)</font>`<font style="color:rgb(15, 17, 21);"> 才能拿到字典格式。</font>
-4. **<font style="color:rgb(15, 17, 21);">数据没保存</font>**<font style="color:rgb(15, 17, 21);">：</font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">INSERT</font>`<font style="color:rgb(15, 17, 21);"> / </font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">UPDATE</font>`<font style="color:rgb(15, 17, 21);"> / </font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">DELETE</font>`<font style="color:rgb(15, 17, 21);"> 执行完后，一定不要忘记 </font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">conn.commit()</font>`<font style="color:rgb(15, 17, 21);">。</font>
+## 6. 踩坑复盘记录
+1. `mysql: command not found`：终端没识别到 MySQL 命令，需将 `bin` 路径加入系统环境变量并**重启 VS Code**。
+2. `UnicodeEncodeError: 'latin-1' codec can't encode...`：PyMySQL 默认用拉丁编码处理密码，如果 root 密码里有中文就会报错。解决：在连接时加上 `charset="utf8mb4"`，或者将 root 密码改为纯英文/数字。
+3. **查询结果是元组**：默认游标是元组，一定要用 `from pymysql.cursors import DictCursor` 配合 `conn.cursor(cursor=DictCursor)` 才能拿到字典格式。
+4. **数据没保存**：`INSERT` / `UPDATE` / `DELETE` 执行完后，一定不要忘记 `conn.commit()`。
 
 
 

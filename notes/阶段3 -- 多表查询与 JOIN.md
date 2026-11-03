@@ -1,11 +1,11 @@
-## <font style="color:rgb(15, 17, 21);">1. 核心目标</font>
-+ <font style="color:rgb(15, 17, 21);">掌握 </font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">INNER JOIN</font>`<font style="color:rgb(15, 17, 21);">、</font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">LEFT JOIN</font>`<font style="color:rgb(15, 17, 21);"> 的本质区别。</font>
-+ <font style="color:rgb(15, 17, 21);">能用 </font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">GROUP BY</font>`<font style="color:rgb(15, 17, 21);"> + 聚合函数进行业务数据统计。</font>
-+ <font style="color:rgb(15, 17, 21);">能用 </font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">子查询</font>`<font style="color:rgb(15, 17, 21);"> 解决嵌套逻辑，用 </font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">UNION</font>`<font style="color:rgb(15, 17, 21);"> 合并结果。</font>
-+ <font style="color:rgb(15, 17, 21);">掌握 MySQL 8.0 的 </font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">窗口函数</font>`<font style="color:rgb(15, 17, 21);">，解决排名问题。</font>
+## 1. 核心目标
++ 掌握 `INNER JOIN`、`LEFT JOIN` 的本质区别。
++ 能用 `GROUP BY` + 聚合函数进行业务数据统计。
++ 能用 `子查询` 解决嵌套逻辑，用 `UNION` 合并结果。
++ 掌握 MySQL 8.0 的 `窗口函数`，解决排名问题。
 
-## <font style="color:rgb(15, 17, 21);">2. 准备工作：准备测试数据</font>
-<font style="color:rgb(15, 17, 21);">为了练手，我们需要往阶段 2 建好的电商四表（</font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">users</font>`<font style="color:rgb(15, 17, 21);">、</font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">products</font>`<font style="color:rgb(15, 17, 21);">、</font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">orders</font>`<font style="color:rgb(15, 17, 21);">、</font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">order_items</font>`<font style="color:rgb(15, 17, 21);">）里塞入一些数据。打开 </font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">sql/03-mock-data.sql</font>`<font style="color:rgb(15, 17, 21);">，执行以下代码：</font>
+## 2. 准备工作：准备测试数据
+为了练手，我们需要往阶段 2 建好的电商四表（`users`、`products`、`orders`、`order_items`）里塞入一些数据。打开 `sql/03-mock-data.sql`，执行以下代码：
 
 ```plain
 USE learn_mysql;
@@ -58,11 +58,11 @@ order_items
 
 ![](https://cdn.nlark.com/yuque/0/2026/png/54927389/1793694022091-e6e940e2-6e6a-400e-9716-2dfda1ee76fa.png)
 
-## <font style="color:rgb(15, 17, 21);">3. 核心语法一：JOIN 的三大类型</font>
-<font style="color:rgb(15, 17, 21);">把两张表想象成两个集合，</font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">JOIN</font>`<font style="color:rgb(15, 17, 21);"> 就是求交集或并集。</font>
+## 3. 核心语法一：JOIN 的三大类型
+把两张表想象成两个集合，`JOIN` 就是求交集或并集。
 
-### <font style="color:rgb(15, 17, 21);">3.1 INNER JOIN（内连接）</font>
-**<font style="color:rgb(15, 17, 21);">只返回两张表中完全匹配的行。</font>**<font style="color:rgb(15, 17, 21);">（最常用，不匹配的数据直接丢弃）。</font>
+### 3.1 INNER JOIN（内连接）
+**只返回两张表中完全匹配的行。**（最常用，不匹配的数据直接丢弃）。
 
 ```plain
 -- 查询所有订单，带上对应的用户名（没有下过单的用户不会显示）
@@ -73,8 +73,8 @@ INNER JOIN users u ON o.user_id = u.id;
 
 ![](https://cdn.nlark.com/yuque/0/2026/png/54927389/1793693944955-3a1277e2-b6b0-45b1-98ab-487be719dc59.png)
 
-### <font style="color:rgb(15, 17, 21);">3.2 LEFT JOIN（左连接）</font><font style="color:rgb(15, 17, 21);">⭐⭐⭐</font>
-**<font style="color:rgb(15, 17, 21);">以左表为准，左表的数据全部保留。右表如果有匹配的就拼上，没有匹配的显示为 </font>**`**<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">NULL</font>**`**<font style="color:rgb(15, 17, 21);">。</font>**
+### 3.2 LEFT JOIN（左连接）⭐⭐⭐
+**以左表为准，左表的数据全部保留。右表如果有匹配的就拼上，没有匹配的显示为 **`NULL`**。**
 
 ```plain
 -- 查询所有用户，以及他们的订单号（即使没下过单，用户也要显示出来）
@@ -83,15 +83,15 @@ FROM users u
 LEFT JOIN orders o ON u.id = o.user_id;
 ```
 
-_<font style="color:rgb(15, 17, 21);">(结果里会出现“王五”，但他的订单号显示为 </font>_`_<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">NULL</font>_`_<font style="color:rgb(15, 17, 21);">)</font>_
+_(结果里会出现“王五”，但他的订单号显示为 _`_NULL_`_)_
 
 ![](https://cdn.nlark.com/yuque/0/2026/png/54927389/1793694055762-bcb64082-824c-4183-9db5-81eccdd3896e.png)
 
-### <font style="color:rgb(15, 17, 21);">3.3 RIGHT JOIN（右连接）</font>
-<font style="color:rgb(15, 17, 21);">以右表为准，右表全保留。实际开发中极少用，因为把表换个位置写 </font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">LEFT JOIN</font>`<font style="color:rgb(15, 17, 21);"> 就完事了。</font>
+### 3.3 RIGHT JOIN（右连接）
+以右表为准，右表全保留。实际开发中极少用，因为把表换个位置写 `LEFT JOIN` 就完事了。
 
-## <font style="color:rgb(15, 17, 21);">4. 核心语法二：聚合与分组（GROUP BY）</font>
-<font style="color:rgb(15, 17, 21);">需求：统计每个用户的总消费金额。</font>
+## 4. 核心语法二：聚合与分组（GROUP BY）
+需求：统计每个用户的总消费金额。
 
 ```plain
 SELECT u.username, SUM(o.total_amount) AS total_spent
@@ -102,12 +102,12 @@ GROUP BY u.id, u.username;
 
 ![](https://cdn.nlark.com/yuque/0/2026/png/54927389/1793694199137-9b9060d6-5d66-4d2f-8d9f-4e6cbd1ebac4.png)
 
-**<font style="color:rgb(15, 17, 21);">⚠️</font>****<font style="color:rgb(15, 17, 21);"> 避坑原则</font>**<font style="color:rgb(15, 17, 21);">：在 </font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">SELECT</font>`<font style="color:rgb(15, 17, 21);"> 中出现的非聚合列（如 </font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">u.username</font>`<font style="color:rgb(15, 17, 21);">），必须全部写在 </font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">GROUP BY</font>`<font style="color:rgb(15, 17, 21);"> 里。</font>
+**⚠️ 避坑原则**：在 `SELECT` 中出现的非聚合列（如 `u.username`），必须全部写在 `GROUP BY` 里。
 
-**<font style="color:rgb(15, 17, 21);">WHERE vs HAVING</font>**<font style="color:rgb(15, 17, 21);">：</font>
+**WHERE vs HAVING**：
 
-+ `<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">WHERE</font>`<font style="color:rgb(15, 17, 21);">：在分组前过滤（不能跟聚合函数）。</font>
-+ `<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">HAVING</font>`<font style="color:rgb(15, 17, 21);">：在分组后过滤（专门针对聚合结果）。</font>
++ `WHERE`：在分组前过滤（不能跟聚合函数）。
++ `HAVING`：在分组后过滤（专门针对聚合结果）。
 
 ```plain
 -- 找出消费总额大于 500 的用户
@@ -120,10 +120,10 @@ HAVING total_spent > 500; -- 这里只能用 HAVING，不能用 WHERE
 
 ![](https://cdn.nlark.com/yuque/0/2026/png/54927389/1793694255498-f3bb79d1-29e6-4eb3-b9e5-eafb70f88377.png)
 
-## <font style="color:rgb(15, 17, 21);">5. 核心语法三：子查询与 UNION</font>
-### <font style="color:rgb(15, 17, 21);">子查询（Subquery）</font>
-**<font style="color:rgb(15, 17, 21);">在一个 SQL 语句里面，嵌套另一个 SQL 语句。</font>**<font style="color:rgb(15, 17, 21);"> 就像套娃一样，里面的 SQL 先执行，把结果给外面的 SQL 用。  
-</font><font style="color:rgb(15, 17, 21);">需求：查找买了“机械键盘”的用户名。</font>
+## 5. 核心语法三：子查询与 UNION
+### 子查询（Subquery）
+**在一个 SQL 语句里面，嵌套另一个 SQL 语句。** 就像套娃一样，里面的 SQL 先执行，把结果给外面的 SQL 用。  
+需求：查找买了“机械键盘”的用户名。
 
 ```plain
 USE learn_mysql;
@@ -140,13 +140,13 @@ WHERE id IN (
 );
 ```
 
-**<font style="color:rgb(15, 17, 21);">运行结果</font>**<font style="color:rgb(15, 17, 21);">：你会查到 </font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">张三</font>`<font style="color:rgb(15, 17, 21);"> 和 </font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">李四</font>`<font style="color:rgb(15, 17, 21);">，因为他们俩的订单里都包含了键盘。</font>  
-**<font style="color:rgb(15, 17, 21);">原理解释</font>**<font style="color:rgb(15, 17, 21);">：数据库的执行顺序是</font>**<font style="color:rgb(15, 17, 21);">由内向外</font>**<font style="color:rgb(15, 17, 21);">的。它先查 </font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">order_items</font>`<font style="color:rgb(15, 17, 21);"> 找到订单号，再查 </font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">orders</font>`<font style="color:rgb(15, 17, 21);"> 找到用户 ID，最后查 </font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">users</font>`<font style="color:rgb(15, 17, 21);"> 找到名字。</font>
+**运行结果**：你会查到 `张三` 和 `李四`，因为他们俩的订单里都包含了键盘。  
+**原理解释**：数据库的执行顺序是**由内向外**的。它先查 `order_items` 找到订单号，再查 `orders` 找到用户 ID，最后查 `users` 找到名字。
 
 ![](https://cdn.nlark.com/yuque/0/2026/png/54927389/1793694433529-bb50c042-5c44-4756-b669-2a5ace45d020.png)
 
-### <font style="color:rgb(15, 17, 21);">UNION（联合查询）</font>
-**<font style="color:rgb(15, 17, 21);">把两个查询结果，上下拼接到一起。</font>**<font style="color:rgb(15, 17, 21);"> 要求两次查询的</font>**<font style="color:rgb(15, 17, 21);">列数必须一样</font>**<font style="color:rgb(15, 17, 21);">。</font>
+### UNION（联合查询）
+**把两个查询结果，上下拼接到一起。** 要求两次查询的**列数必须一样**。
 
 ```plain
 SELECT username FROM users WHERE id = 1
@@ -154,26 +154,26 @@ UNION
 SELECT username FROM users WHERE id = 2;
 ```
 
-**<font style="color:rgb(15, 17, 21);">运行结果</font>**<font style="color:rgb(15, 17, 21);">：查出来两行数据（张三、李四）。  
-</font>**<font style="color:rgb(15, 17, 21);">注意</font>**<font style="color:rgb(15, 17, 21);">：</font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">UNION</font>`<font style="color:rgb(15, 17, 21);"> 会自动去重。如果你想保留所有数据（哪怕重复），用 </font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">UNION ALL</font>`<font style="color:rgb(15, 17, 21);">（性能更好，因为不用去重）。</font>
+**运行结果**：查出来两行数据（张三、李四）。  
+**注意**：`UNION` 会自动去重。如果你想保留所有数据（哪怕重复），用 `UNION ALL`（性能更好，因为不用去重）。
 
 ![](https://cdn.nlark.com/yuque/0/2026/png/54927389/1793694781719-d90c7b95-5c90-4231-b917-67b94cd7d295.png)
 
-## <font style="color:rgb(15, 17, 21);">6. 核心语法四：窗口函数（MySQL 8.0+ 高级特性）</font>
-<font style="color:rgb(15, 17, 21);">窗口函数的核心就是这句万能的公式：</font>
+## 6. 核心语法四：窗口函数（MySQL 8.0+ 高级特性）
+窗口函数的核心就是这句万能的公式：
 
 ```plain
 函数名() OVER (PARTITION BY 分组字段 ORDER BY 排序字段)
 ```
 
-1. `**<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">OVER (...)</font>**`<font style="color:rgb(15, 17, 21);">：划出一个“窗口”（就是数据范围），告诉 MySQL 在这个窗口里做计算。</font>
-2. `**<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">ORDER BY</font>**`<font style="color:rgb(15, 17, 21);">：在窗口里怎么排序。</font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">DESC</font>`<font style="color:rgb(15, 17, 21);"> 就是降序。</font>
-3. `**<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">PARTITION BY</font>**`**<font style="color:rgb(15, 17, 21);">（可选）</font>**<font style="color:rgb(15, 17, 21);">：相当于在这个窗口里再次分组。比如 </font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">PARTITION BY category_id</font>`<font style="color:rgb(15, 17, 21);">，就是按分类分别排名，各排各的。</font>
+1. `OVER (...)`：划出一个“窗口”（就是数据范围），告诉 MySQL 在这个窗口里做计算。
+2. `ORDER BY`：在窗口里怎么排序。`DESC` 就是降序。
+3. `PARTITION BY`**（可选）**：相当于在这个窗口里再次分组。比如 `PARTITION BY category_id`，就是按分类分别排名，各排各的。
 
 
 
-<font style="color:rgb(15, 17, 21);">需求：给所有商品的销售总数量</font>**<font style="color:rgb(15, 17, 21);">排名</font>**<font style="color:rgb(15, 17, 21);">。  
-</font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">GROUP BY</font>`<font style="color:rgb(15, 17, 21);"> 只能统计，很难保留明细。窗口函数可以在保留明细的同时进行聚合。</font>
+需求：给所有商品的销售总数量**排名**。  
+`GROUP BY` 只能统计，很难保留明细。窗口函数可以在保留明细的同时进行聚合。
 
 ```plain
 -- 统计每个商品的销量并排名
@@ -186,11 +186,11 @@ LEFT JOIN order_items oi ON p.id = oi.product_id
 GROUP BY p.id, p.title;
 ```
 
-+ `<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">ROW_NUMBER()</font>`<font style="color:rgb(15, 17, 21);">：生成 1, 2, 3, 4 严格序号。</font>
-+ `<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">RANK()</font>`<font style="color:rgb(15, 17, 21);">：如果有并列第一，会生成 1, 1, 3（并列占位）。</font>
++ `ROW_NUMBER()`：生成 1, 2, 3, 4 严格序号。
++ `RANK()`：如果有并列第一，会生成 1, 1, 3（并列占位）。
 
-## <font style="color:rgb(15, 17, 21);">7. Python 实战：在代码里做多表查询</font>
-<font style="color:rgb(15, 17, 21);">在 </font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">practice/phase3/</font>`<font style="color:rgb(15, 17, 21);"> 新建 </font>`<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">multi_table_query.py</font>`<font style="color:rgb(15, 17, 21);">（如果没有文件夹请新建）。</font>
+## 7. Python 实战：在代码里做多表查询
+在 `practice/phase3/` 新建 `multi_table_query.py`（如果没有文件夹请新建）。
 
 ```plain
 import pymysql
@@ -229,28 +229,28 @@ finally:
     conn.close()
 ```
 
-<font style="color:rgb(15, 17, 21);">  
-</font><font style="color:rgb(15, 17, 21);"> </font>
+  
+ 
 
-<font style="color:rgb(15, 17, 21);"></font>
 
-<font style="color:rgb(15, 17, 21);"></font>
 
-<font style="color:rgb(15, 17, 21);"></font>
 
-<font style="color:rgb(15, 17, 21);"></font>
 
-<font style="color:rgb(15, 17, 21);"></font>
 
-<font style="color:rgb(15, 17, 21);"></font>
 
-<font style="color:rgb(15, 17, 21);"></font>
 
-<font style="color:rgb(15, 17, 21);"></font>
 
-<font style="color:rgb(15, 17, 21);"></font>
 
-<font style="color:rgb(15, 17, 21);"></font>
 
-<font style="color:rgb(15, 17, 21);"></font>
+
+
+
+
+
+
+
+
+
+
+
 
