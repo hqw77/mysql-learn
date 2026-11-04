@@ -10,7 +10,7 @@ Python + MySQL 进阶实战学习仓库。
 | --- | --- | --- | --- |
 | 第一章 | MySQL 进阶基础（建表 / JOIN / 事务 / 索引 / 设计 / 运维） | 已完成 | `notes/ch01/` + `practice/phase0~6/` + `sql/` |
 | 第二章 | Python 数据库连接池 | 已完成 | `notes/第二章` + `practice/ch02-pool/` |
-| 第三章 | SQLAlchemy ORM 基础 | 进行中 | `app/models/`、`app/db/` |
+| 第三章 | SQLAlchemy ORM 基础 | 已完成 | `app/models/user.py` + `migrations/` |
 | 第四~七章 | ORM CRUD / 进阶 / FastAPI / 完整项目 | 待开始 | `app/services/`、`app/routers/` |
 
 ## 目录结构
@@ -27,14 +27,21 @@ mysql-learning/
 │   │   ├── base.py               # DeclarativeBase，Alembic 的入口
 │   │   ├── engine.py             # Engine + 连接池参数
 │   │   └── session.py            # SessionLocal 与 get_db
-│   ├── models/                   # SQLAlchemy ORM 实体（待填）
+│   ├── models/                   # SQLAlchemy ORM 实体
+│   │   └── user.py               # User 模型 → learn_mysql.users
 │   ├── schemas/                  # Pydantic 请求/响应模型（待填）
 │   ├── services/                 # 业务逻辑与事务边界（待填）
 │   └── routers/                  # HTTP 路由
 │       └── health.py             # /health、/health/db
+├── migrations/                   # Alembic 数据库迁移
+│   ├── env.py                    # 从 .env 取连接串，支持 include_object 过滤
+│   └── versions/
+│       └── 0001_initial_schema.py
+├── alembic.ini
 ├── notes/                        # 学习笔记
 │   ├── ch01/                     # 第一章：阶段0 ~ 阶段7
 │   ├── 第二章 -- Python 数据库连接池.md
+│   ├── 第三章 -- SQLAlchemy ORM 基础.md
 │   └── Python + MySQL 进阶实战教程.md
 ├── practice/                     # 学习过程的脚本，保留演进轨迹
 │   ├── phase0/ ~ phase6/         # 对应 ch01 各阶段
@@ -118,7 +125,28 @@ uvicorn app.main:app --reload
 | --- | --- |
 | 连接池原理、PooledDB 参数详解、压测对比、面试题 | [第二章 -- Python 数据库连接池](notes/第二章%20--%20Python%20数据库连接池.md) |
 
+### 第三章 · SQLAlchemy ORM 基础
+
+| 主题 | 笔记 | 代码 |
+| --- | --- | --- |
+| Engine / Session / DeclarativeBase、`Mapped[T]` 与 `mapped_column`、Alembic 基线 | [第三章 -- SQLAlchemy ORM 基础](notes/第三章%20--%20SQLAlchemy%20ORM%20基础.md) | `app/models/user.py`、`migrations/` |
+
 完整学习路线见 [Python + MySQL 进阶实战教程](notes/Python%20+%20MySQL%20进阶实战教程.md)。
+
+## 数据库迁移
+
+表结构变更一律走 Alembic，不要用 `Base.metadata.create_all`。
+
+```bash
+alembic current                          # 当前版本
+alembic check                            # 模型与库是否有差异
+alembic revision --autogenerate -m "描述" # 生成迁移
+alembic upgrade head                     # 应用迁移
+alembic downgrade -1                     # 回退一步
+```
+
+> 注意：库里有第一章遗留的练习表（`students`/`books`/`orders`…），它们没有对应的 ORM 模型。
+> `migrations/env.py` 里的 `include_object` 会把这些表排除在外，防止 autogenerate 生成 `DROP TABLE`。
 
 ## 练习代码怎么跑
 

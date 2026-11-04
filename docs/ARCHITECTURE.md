@@ -56,12 +56,12 @@
         └───────────────────────────┬───────────────────────────┘
                                     ▼
         ┌───────────────────────────────────────────────────────┐
-        │  app/services/*         ❌ 空，待第三章/四章填充        │
+        │  app/services/*         ❌ 空，待第四章填充            │
         │    业务规则 · 事务边界 · 抛 AppError                   │
         └───────────────────────────┬───────────────────────────┘
                                     ▼
         ┌───────────────────────────────────────────────────────┐
-        │  app/models/*           ❌ 空，待第三章                 │
+        │  app/models/*           ✅ User 模型（第三章）          │
         │    SQLAlchemy 实体映射                                 │
         └───────────────────────────┬───────────────────────────┘
                                     ▼
@@ -153,10 +153,10 @@
 | 连接 | `db/engine.py`、`db/session.py`、`db/base.py` | ✅ | 第三章 |
 | 路由 | `routers/health.py` | ✅ 探针 | 第六章 |
 | 路由 | `routers/users.py` 等 | ❌ | 第六、七章 |
-| 模型 | `models/*` | ❌ 空 | 第三章 |
+| 模型 | `models/user.py` | ✅ | 第三章 |
 | 校验 | `schemas/*` | ❌ 空 | 第六章 |
 | 业务 | `services/*` | ❌ 空 | 第四、五章 |
-| 迁移 | `migrations/`（Alembic） | ❌ 未建 | 第五章 |
+| 迁移 | `migrations/`（Alembic） | ✅ 基线 `0001_initial` | 第三章 |
 | 测试 | `tests/` | ❌ 空 | 第七章 |
 
 ## 7. Mermaid 版本（GitHub 直接渲染）
@@ -173,7 +173,7 @@ flowchart TD
     db[("MySQL 8.0.42<br/>learn_mysql / test_db")]
 
     services["app/services/*<br/>业务层（待建）"]
-    models["app/models/*<br/>ORM（待建）"]
+    models["app/models/*<br/>ORM（User）"]
     config["app/core/config.py<br/>读 .env"]
     exceptions["app/core/exceptions.py"]
 
@@ -217,11 +217,11 @@ flowchart LR
 ## 8. 演进路线
 
 ```plain
-当前 ──► 第三章：models/user.py + Alembic 基线
-          ──► 第四章：services + routers，用户 CRUD
-          ──► 第五章：relationship + RBAC（roles / permissions / user_roles）
-          ──► 第六章：RESTful API + Pydantic 校验 + 分页
-          ──► 第七章：认证、测试、完整项目收口
+第一、二章 ✅ ──► 第三章 ✅：models/user.py + Alembic 基线 0001_initial
+                     ──► 第四章：services + routers，用户 CRUD
+                     ──► 第五章：relationship + RBAC（roles / permissions / user_roles）
+                     ──► 第六章：RESTful API + Pydantic 校验 + 分页
+                     ──► 第七章：认证、测试、完整项目收口
 ```
 
-`app/` 当前是**可运行的骨架**：能起服务、能连库、能返回探针结果，但还没有业务表映射。从第三章开始才往里填肉。
+`app/` 当前是**可运行的骨架 + 一个 User 模型**：服务能起、库能连、ORM 能查出真实数据、迁移版本可控。但 `services/` 和 `schemas/` 还空着，所以还没有业务接口——那是第四章的事。

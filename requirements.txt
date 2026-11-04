@@ -5,3 +5,4 @@ PyMySQL>=1.1.0
 cryptography>=42
 pydantic-settings>=2.6
 DBUtils>=3.0.3
+alembic>=1.13
