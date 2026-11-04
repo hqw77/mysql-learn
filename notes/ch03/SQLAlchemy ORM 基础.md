@@ -47,6 +47,8 @@
 
 先别管什么分层、目录、配置。就一个文件，跑通再说。
 
+> 完整可运行版本：[practice/ch03/mini_orm.py](../../practice/ch03/mini_orm.py)（`python practice/ch03/mini_orm.py`）
+
 ```python
 # mini_orm.py —— 先跑通，再谈架构
 import os
