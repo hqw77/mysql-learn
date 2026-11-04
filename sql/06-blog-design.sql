@@ -1,0 +1,52 @@
+USE learn_mysql;
+
+-- 1. 用户表
+CREATE TABLE blog_users (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password_hash VARCHAR(60) NOT NULL COMMENT '密码密文',
+    is_deleted TINYINT(1) DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = '博客用户表';
+
+-- 2. 分类表
+CREATE TABLE categories (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(30) NOT NULL UNIQUE
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = '文章分类表';
+
+-- 3. 标签表
+CREATE TABLE tags (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(30) NOT NULL UNIQUE
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = '标签表';
+
+-- 4. 文章表
+CREATE TABLE articles (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT UNSIGNED NOT NULL,
+    category_id INT UNSIGNED NOT NULL,
+    title VARCHAR(100) NOT NULL,
+    content TEXT NOT NULL,
+    view_count INT UNSIGNED DEFAULT 0 COMMENT '阅读量(反范式)',
+    is_deleted TINYINT(1) DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = '文章表';
+
+-- 5. 文章-标签中间表（多对多）
+CREATE TABLE article_tags (
+    article_id BIGINT UNSIGNED NOT NULL,
+    tag_id INT UNSIGNED NOT NULL,
+    PRIMARY KEY (article_id, tag_id) -- 联合主键，防止重复关联
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = '文章标签关联表';
+
+-- 6. 评论表（自关联设计，支持回复功能）
+CREATE TABLE comments (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    article_id BIGINT UNSIGNED NOT NULL,
+    user_id BIGINT UNSIGNED NOT NULL,
+    parent_id BIGINT UNSIGNED DEFAULT NULL COMMENT '父评论ID，NULL表示一级评论',
+    content VARCHAR(500) NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = '评论表';
