@@ -17,9 +17,9 @@ chapters/ch01/
 | 层 | 目录 | 是什么 | 现在到哪 |
 | --- | --- | --- | --- |
 | 章节包 | `chapters/chNN/` | 每章一个，内含 `notes/` 与 `code/` | 第一 ~ 三章 |
-| 作品集 | `app/` | 最终要交付的 FastAPI 项目 | 第三章落地，等第四章长肉 |
+| 作品集 | `app/` | 最终要交付的 FastAPI 项目 | 已能提供完整用户 API |
 
-> `app/` 既不是空壳，也不是成品。它现在能跑通健康检查、能查库，但**业务代码是第四章才开始写的**。
+> `app/` 不再是空壳：第三章搭骨架，第四~六章陆续长出了 services、models（关系）、schemas 和 routers。
 
 ## 学习进度
 
@@ -28,8 +28,11 @@ chapters/ch01/
 | 第一章 | MySQL 进阶基础（建表 / JOIN / 事务 / 索引 / 设计 / 运维） | 已完成 | `chapters/ch01/notes/` | `chapters/ch01/code/` + `chapters/ch01/sql/` |
 | 第二章 | Python 数据库连接池 | 已完成 | `chapters/ch02/notes/` | `chapters/ch02/code/` |
 | 第三章 | SQLAlchemy ORM 基础 | 已完成 | `chapters/ch03/notes/` | `chapters/ch03/code/` + `app/models/user.py` |
-| 第四章 | SQLAlchemy ORM CRUD | 下一个 | — | — |
-| 第五~七章 | 进阶 / FastAPI / 完整项目 | 待开始 | — | — |
+| 第四章 | SQLAlchemy ORM CRUD | 已完成 | `chapters/ch04/notes/` | `chapters/ch04/code/` + `app/services/` |
+| 第五章 | SQLAlchemy 进阶（关系 / N+1 / 并发 / 迁移） | 已完成 | `chapters/ch05/notes/` | `chapters/ch05/code/` + `app/models/order.py`、`role.py` |
+| 第六章 | FastAPI + MySQL | 已完成 | `chapters/ch06/notes/` | `chapters/ch06/code/` + `app/schemas/`、`app/routers/users.py` |
+| 第七章 | 完整项目实战 | 下一个 | — | — |
+| 第八章 | 面试题与项目复盘 | 待开始 | — | — |
 
 ## 目录结构
 
@@ -49,6 +52,15 @@ mysql-learning/
 │   ├── ch03/
 │   │   ├── notes/SQLAlchemy ORM 基础.md
 │   │   └── code/                 # 01~04 四个可执行案例
+│   ├── ch04/
+│   │   ├── notes/SQLAlchemy ORM CRUD.md
+│   │   └── code/                 # 01~04（增删改查、批量、service）
+│   ├── ch05/
+│   │   ├── notes/SQLAlchemy 进阶.md
+│   │   └── code/                 # 01~04（关系、多对多、N+1、并发锁）
+│   ├── ch06/
+│   │   ├── notes/FastAPI + MySQL.md
+│   │   └── code/                 # 01~03（schema 校验、读接口、写接口）
 │   └── extras/                   # 番外：主线上放不下的专题
 │       └── notes/01-Alembic 数据库迁移.md
 ├── app/                          # 作品集：第 4 章开始长出业务代码
@@ -61,13 +73,17 @@ mysql-learning/
 │   │   ├── base.py               # DeclarativeBase
 │   │   ├── engine.py             # Engine + 连接池
 │   │   └── session.py            # SessionLocal 与 get_db
-│   ├── models/
-│   │   └── user.py               # User → learn_mysql.users
+│   ├── models/                   # User / Order / Role（一对多 + 多对多）
+│   ├── schemas/                  # UserCreate / UserOut / UserPage
+│   ├── services/                 # user_service：业务逻辑与事务边界
 │   └── routers/
-│       └── health.py             # /health、/health/db
-├── migrations/                   # Alembic 迁移（第三章产物，依赖 app/db/base.py）
+│       ├── health.py             # /health、/health/db
+│       └── users.py              # /users 五个接口
+├── migrations/                   # Alembic 迁移
 │   ├── env.py                    # 从 .env 取连接串，include_object 防误删
-│   └── versions/0001_initial_schema.py
+│   └── versions/
+│       ├── 0001_initial_schema.py
+│       └── 0002_add_roles.py     # 第五章：roles + user_roles
 ├── docs/                         # 架构说明 · 教程规划 · 文档排版模式
 ├── alembic.ini
 ├── .env.example
@@ -155,6 +171,24 @@ uvicorn app.main:app --reload
 | Engine / Base / Model / Session 四件套、`Mapped[T]` 与 `mapped_column`、脏检查机制、四个可执行案例 | [第三章](chapters/ch03/notes/SQLAlchemy%20ORM%20基础.md) | `chapters/ch03/code/01~04` + `app/models/user.py` |
 | 建表迁移单独成篇：`create_all` 为什么不适用、Alembic 基线、`include_object` 防误删 | [番外01 -- Alembic 数据库迁移](chapters/extras/notes/01-Alembic%20数据库迁移.md) | `migrations/` |
 
+### 第四章 · SQLAlchemy ORM CRUD
+
+| 主题 | 笔记 | 代码 |
+| --- | --- | --- |
+| `add`/`commit`/`refresh` 的时序、条件查询与分页、改的两种写法、软删 vs 硬删、批量写入、service 分层 | [第四章](chapters/ch04/notes/SQLAlchemy%20ORM%20CRUD.md) | `chapters/ch04/code/01~04` + `app/services/user_service.py` |
+
+### 第五章 · SQLAlchemy 进阶
+
+| 主题 | 笔记 | 代码 |
+| --- | --- | --- |
+| 一对多 / 多对多关系映射、没有物理外键怎么写 `primaryjoin`、N+1 与 `selectinload`、并发丢更新、Alembic 加表 | [第五章](chapters/ch05/notes/SQLAlchemy%20进阶.md) | `chapters/ch05/code/01~04` + `app/models/order.py`、`role.py` |
+
+### 第六章 · FastAPI + MySQL
+
+| 主题 | 笔记 | 代码 |
+| --- | --- | --- |
+| Pydantic 校验与响应裁剪、状态码语义、异常到 HTTP 的映射、分页接口、TestClient | [第六章](chapters/ch06/notes/FastAPI%20+%20MySQL.md) | `chapters/ch06/code/01~03` + `app/schemas/`、`app/routers/users.py` |
+
 完整学习路线见 [Python + MySQL 进阶实战教程](chapters/README.md)。
 
 ## 数据库迁移
@@ -197,6 +231,17 @@ export MYSQL_PASSWORD=你的密码
 | `python chapters/ch03/code/02_pymysql_vs_orm.py` | 案例2：PyMySQL 拿字典 vs ORM 拿对象 |
 | `python chapters/ch03/code/03_dirty_check.py` | 案例3：脏检查，验证什么时候才发 UPDATE |
 | `python chapters/ch03/code/04_use_app_model.py` | 案例4：工程版模型，和脚本版只差一个 import |
+| `python chapters/ch04/code/01_add.py` | 案例1：新增与唯一键冲突 |
+| `python chapters/ch04/code/02_query.py` | 案例2：条件查询与分页 |
+| `python chapters/ch04/code/03_update_delete.py` | 案例3：改的两种写法，软删 vs 硬删 |
+| `python chapters/ch04/code/04_batch_and_service.py` | 案例4：批量写入 12.9 倍差距，service 分层 |
+| `python chapters/ch05/code/01_relationship.py` | 案例1：一对多与懒加载时机 |
+| `python chapters/ch05/code/02_many_to_many.py` | 案例2：多对多与中间表 |
+| `python chapters/ch05/code/03_nplus1.py` | 案例3：N+1 实测（4 条 vs 2 条 SQL） |
+| `python chapters/ch05/code/04_lock.py` | 案例4：并发丢更新与 FOR UPDATE |
+| `python chapters/ch06/code/01_schemas.py` | 案例1：Pydantic 校验规则 |
+| `python chapters/ch06/code/02_api_read.py` | 案例2：读接口、404、422 |
+| `python chapters/ch06/code/03_api_write.py` | 案例3：写接口 201/409/204 |
 
 ### 第二章实测数据
 

@@ -6,12 +6,17 @@ SQLAlchemy 2.0 风格：`Mapped[T]` 声明 Python 类型，`mapped_column()` 描
 
 from datetime import datetime
 from decimal import Decimal
+from typing import TYPE_CHECKING
 
 from sqlalchemy import DateTime, Numeric, String, text
 from sqlalchemy.dialects.mysql import INTEGER, TINYINT
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
+
+if TYPE_CHECKING:
+    from app.models.order import Order
+    from app.models.role import Role
 
 
 class User(Base):
@@ -49,3 +54,19 @@ class User(Base):
 
     def __repr__(self) -> str:
         return f"<User id={self.id} username={self.username!r} balance={self.balance}>"
+
+    # ---- 关系映射（第五章）------------------------------------------
+
+    # 一对多：一个用户有多张订单
+    # ⚠️ 库里没有物理外键，所以两边都要写 primaryjoin + foreign()
+    orders: Mapped[list["Order"]] = relationship(
+        back_populates="user",
+        order_by="Order.id",
+        primaryjoin="foreign(Order.user_id) == User.id",
+    )
+
+    # 多对多：一个用户可有多个角色，一个角色可属于多个用户
+    roles: Mapped[list["Role"]] = relationship(
+        secondary="user_roles",
+        back_populates="users",
+    )

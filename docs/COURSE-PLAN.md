@@ -98,8 +98,19 @@ ch1 SQL 基础
 | 1 | ✅ | ✅ | — | 完成 |
 | 2 | ✅ | ✅ | — | 完成 |
 | 3 | ✅ | ✅ | ✅ | 完成 |
-| 4 | ⬜ | ⬜ | ⬜ | 未开始（当前停在第三章） |
-| 5~8 | ⬜ | ⬜ | ⬜ | 未开始 |
+| 4 | ✅ | ✅ | ✅ | 完成 |
+| 5 | ✅ | ✅ | ✅ | 完成 |
+| 6 | ✅ | ✅ | ✅ | 完成 |
+| 7 | ⬜ | ⬜ | ⬜ | 未开始（当前停在第六章） |
+| 8 | ⬜ | ⬜ | ⬜ | 未开始 |
+
+**第四~六章工程增量**
+
+| 章 | 新增文件 |
+| --- | --- |
+| 4 | `app/services/user_service.py`（业务逻辑与事务边界） |
+| 5 | `app/models/order.py`、`app/models/role.py`、`migrations/versions/0002_add_roles.py` |
+| 6 | `app/schemas/user.py`、`app/routers/users.py`，`main.py` 注册路由 |
 
 ## 7. 第三章的收口
 

@@ -4,6 +4,8 @@
 Alembic 就发现不了它。
 """
 
+from app.models.order import Order
+from app.models.role import Role, user_roles
 from app.models.user import User
 
-__all__ = ["User"]
+__all__ = ["User", "Order", "Role", "user_roles"]

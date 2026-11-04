@@ -149,14 +149,15 @@
 | 层 | 文件 | 状态 | 对应章节 |
 | --- | --- | --- | --- |
 | 配置 | `core/config.py` | ✅ | 第三章 |
-| 异常 | `core/exceptions.py` | ✅ | 第六章 |
+| 异常 | `core/exceptions.py` | ✅ | 第三章 |
 | 连接 | `db/engine.py`、`db/session.py`、`db/base.py` | ✅ | 第三章 |
-| 路由 | `routers/health.py` | ✅ 探针 | 第六章 |
-| 路由 | `routers/users.py` 等 | ❌ | 第六、七章 |
+| 路由 | `routers/health.py` | ✅ 探针 | 第三章 |
+| 路由 | `routers/users.py` | ✅ 5 个接口 | 第六章 |
 | 模型 | `models/user.py` | ✅ | 第三章 |
-| 校验 | `schemas/*` | ❌ 空 | 第六章 |
-| 业务 | `services/*` | ❌ 空 | 第四、五章 |
-| 迁移 | `migrations/`（Alembic） | ✅ 基线 `0001_initial` | 第三章 |
+| 模型 | `models/order.py`、`models/role.py` | ✅ 一对多 + 多对多 | 第五章 |
+| 校验 | `schemas/user.py` | ✅ | 第六章 |
+| 业务 | `services/user_service.py` | ✅ | 第四章 |
+| 迁移 | `migrations/`（Alembic） | ✅ `0001` + `0002` | 第三、五章 |
 | 测试 | `tests/` | 未建 | 第七章 |
 
 ## 7. Mermaid 版本（GitHub 直接渲染）
@@ -213,11 +214,11 @@ flowchart LR
 ## 8. 演进路线
 
 ```plain
-第一、二章 ✅ ──► 第三章 ✅：models/user.py + Alembic 基线 0001_initial
-                     ──► 第四章：services + routers，用户 CRUD
-                     ──► 第五章：relationship + RBAC（roles / permissions / user_roles）
-                     ──► 第六章：RESTful API + Pydantic 校验 + 分页
-                     ──► 第七章：认证、测试、完整项目收口
+第一章 ✅ ──► 第二章 ✅ ──► 第三章 ✅：models/user.py + Alembic 基线 0001_initial
+                            ──► 第四章 ✅：services/user_service.py，用户 CRUD
+                            ──► 第五章 ✅：relationship（Order/Role）+ 迁移 0002
+                            ──► 第六章 ✅：schemas + routers/users.py，5 个接口
+                            ──► 第七章：认证、测试、完整项目收口
 ```
 
-`app/` 当前是**可运行的骨架 + 一个 User 模型**：服务能起、库能连、ORM 能查出真实数据、迁移版本可控。但 `services/` 和 `schemas/` 还空着，所以还没有业务接口——那是第四章的事。
+`app/` 当前是一个**能提供完整用户 API 的应用**：`/users` 的增删改查、分页、参数校验、异常映射都已经跑通，`alembic check` 与库结构一致。还缺认证（登录/密码哈希）、权限校验和自动化测试——那是第七章的事。
