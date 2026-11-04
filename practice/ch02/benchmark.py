@@ -2,7 +2,7 @@
 
 运行：
     export MYSQL_PASSWORD=你的密码
-    python practice/ch02-pool/benchmark.py
+    python practice/ch02/benchmark.py
 
 看两件事：
     1. 耗时差距 —— 建连接要 TCP 握手 + 认证，比执行 SELECT 1 贵得多

@@ -11,7 +11,7 @@
 | 3 | Model 怎么用 2.0 语法写 | 一个 `User` 类 |
 | 4 | 怎么用 Session 查出一条数据 | `session.get(User, 1)` |
 
-> ⏭️ **建表迁移（Alembic）不在本章**，已抽到 [番外01 -- Alembic 数据库迁移](番外01%20--%20Alembic%20数据库迁移.md)。本章假设表已经存在——你库里的 `users` 表早就有了。
+> ⏭️ **建表迁移（Alembic）不在本章**，已抽到 [番外01 -- Alembic 数据库迁移](../番外/01-Alembic%20数据库迁移.md)。本章假设表已经存在——你库里的 `users` 表早就有了。
 
 ---
 
@@ -526,4 +526,4 @@ users = session.scalars(select(User).where(User.id.in_(user_ids))).all()
 
 ---
 
-<small>相关：[番外01 -- Alembic 数据库迁移](番外01%20--%20Alembic%20数据库迁移.md) · [第二章 -- Python 数据库连接池](第二章%20--%20Python%20数据库连接池.md)</small>
+<small>相关：[番外01 -- Alembic 数据库迁移](../番外/01-Alembic%20数据库迁移.md) · [第二章 -- Python 数据库连接池](../ch02/Python%20数据库连接池.md)</small>

@@ -70,7 +70,7 @@ DELETE FROM students WHERE name = '李四';
 ![](https://cdn.nlark.com/yuque/0/2026/png/54927389/1793545002427-6111de69-118d-4f7e-968b-11e5b7ea082f.png)
 
 ## 3. Python 实战（PyMySQL）
-现在，打开 `practice/phase1/crud_basics.py`，开始写真正的后端代码。
+现在，打开 `practice/ch01/phase1/crud_basics.py`，开始写真正的后端代码。
 
 ```plain
 import pymysql
@@ -157,7 +157,7 @@ cur.execute(f"SELECT * FROM students WHERE age = {age}")
 ## 5. 阶段 1 进阶任务（验收作业）
 光是跑通上面的代码不够，你现在需要独立完成以下任务。
 
-打开 `practice/phase1/student_manager.py`，用 PyMySQL 写一个**控制台交互版的学生管理系统**：
+打开 `practice/ch01/phase1/student_manager.py`，用 PyMySQL 写一个**控制台交互版的学生管理系统**：
 
 1. 程序启动时，给用户显示菜单（1. 录入学生；2. 查看所有学生；3. 修改分数；4. 删除学生；5. 退出）。
 2. 用户选择 1，提示用户输入姓名、年龄、分数，用代码插入数据库。

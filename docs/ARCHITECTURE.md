@@ -1,7 +1,7 @@
 # 项目架构
 
-> 生成时间：2026-11-04 · 对应提交 `8e65f2c`
-> 说明：`app/` 是工程代码，`practice/` 是学习轨迹，两者互不 import。
+> 生成时间：2026-11-04 · 对应提交 `e645787` 之后的结构调整
+> 说明：`app/` 是作品集（第 4 章起长业务代码），`practice/` 是学习轨迹，两者互不 import。
 
 ## 1. 全貌
 
@@ -118,7 +118,7 @@
 | 连接池 | 手写 `PooledDB(...)` | `create_engine` 自带 `QueuePool` |
 | 池参数 | `mincached` / `maxcached` / `maxconnections` / `blocking` / `ping` | `pool_size` / `max_overflow` / `pool_recycle` / `pool_pre_ping` |
 | 事务 | `conn.commit()` / `rollback()` | `Session.commit()` / `rollback()` |
-| 代表文件 | `practice/ch02-pool/pool.py` | `app/db/engine.py` |
+| 代表文件 | `practice/ch02/pool.py` | `app/db/engine.py` |
 
 第二章的结论在这里直接复用：**`close()` 在池化语境下是归还，不是断开**。SQLAlchemy 的 `Session.close()` 同理，归还连接但不销毁池。
 
@@ -157,7 +157,7 @@
 | 校验 | `schemas/*` | ❌ 空 | 第六章 |
 | 业务 | `services/*` | ❌ 空 | 第四、五章 |
 | 迁移 | `migrations/`（Alembic） | ✅ 基线 `0001_initial` | 第三章 |
-| 测试 | `tests/` | ❌ 空 | 第七章 |
+| 测试 | `tests/` | 未建 | 第七章 |
 
 ## 7. Mermaid 版本（GitHub 直接渲染）
 

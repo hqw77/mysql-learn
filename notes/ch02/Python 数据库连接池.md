@@ -1,7 +1,7 @@
 # 第二章 -- Python 数据库连接池
 
 > 对应教程第二章。改造对象：`practice/legacy/demo-user-manager-sys.py`（裸连接版）
-> 改造结果：`practice/ch02-pool/`（池化版）
+> 改造结果：`practice/ch02/`（池化版）
 
 ## 1. 学习目标
 
@@ -80,7 +80,7 @@ pip install DBUtils
 export MYSQL_PASSWORD=你的密码
 ```
 
-本仓库已装 `DBUtils 3.2.0`，代码在 `practice/ch02-pool/`。
+本仓库已装 `DBUtils 3.2.0`，代码在 `practice/ch02/`。
 
 > 注意：`DBUtils` 的包名是 `DBUtils`，导入时写 `from dbutils.pooled_db import PooledDB`，大小写不一致是正常的。
 
@@ -120,7 +120,7 @@ def get_user(self, uid: int) -> dict | None:
 ### 6.3 benchmark.py —— 用数据说话
 
 ```bash
-python practice/ch02-pool/benchmark.py
+python practice/ch02/benchmark.py
 ```
 
 ## 7. PooledDB 参数逐条解释
