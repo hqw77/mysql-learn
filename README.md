@@ -42,7 +42,7 @@ mysql-learning/
 │   ├── ch01/                     # 第一章的 7 个阶段脚本
 │   │   └── phase0/ ~ phase6/
 │   ├── ch02/                     # 连接池：pool.py / user_dao.py / benchmark.py
-│   ├── ch03/                     # ORM：mini_orm.py（30 行闭环，对照 app/ 用）
+│   ├── ch03/                     # ORM：4 个可执行案例（查询 / 对照 / 脏检查 / 工程版）
 │   └── legacy/                   # 最早的 PyMySQL 用户管理系统（第二章的改造对象）
 ├── app/                          # 作品集：第 4 章开始长出业务代码
 │   ├── main.py                   # 入口：路由注册、异常处理、生命周期
@@ -147,7 +147,7 @@ uvicorn app.main:app --reload
 
 | 主题 | 笔记 | 代码 |
 | --- | --- | --- |
-| Engine / Base / Model / Session 四件套、`Mapped[T]` 与 `mapped_column`、脏检查机制、从 30 行到分层的演进 | [第三章](notes/ch03/SQLAlchemy%20ORM%20基础.md) | `practice/ch03/mini_orm.py` + `app/models/user.py` |
+| Engine / Base / Model / Session 四件套、`Mapped[T]` 与 `mapped_column`、脏检查机制、四个可执行案例 | [第三章](notes/ch03/SQLAlchemy%20ORM%20基础.md) | `practice/ch03/01~04` + `app/models/user.py` |
 | 建表迁移单独成篇：`create_all` 为什么不适用、Alembic 基线、`include_object` 防误删 | [番外01 -- Alembic 数据库迁移](notes/番外/01-Alembic%20数据库迁移.md) | `migrations/` |
 
 完整学习路线见 [Python + MySQL 进阶实战教程](notes/Python%20+%20MySQL%20进阶实战教程.md)。
@@ -187,7 +187,10 @@ export MYSQL_PASSWORD=你的密码
 | `python practice/ch01/phase6/design_check.py` | 查看当前库的表结构 |
 | `python practice/legacy/demo-user-manager-sys.py` | 裸连接版用户管理（改造前） |
 | `python practice/ch02/benchmark.py` | 裸连接 vs 连接池压测（改造后） |
-| `python practice/ch03/mini_orm.py` | 30 行跑通 ORM：Engine / Base / Model / Session |
+| `python practice/ch03/01_first_query.py` | 案例1：最小闭环，用 ORM 查出第一条数据 |
+| `python practice/ch03/02_pymysql_vs_orm.py` | 案例2：PyMySQL 拿字典 vs ORM 拿对象 |
+| `python practice/ch03/03_dirty_check.py` | 案例3：脏检查，验证什么时候才发 UPDATE |
+| `python practice/ch03/04_use_app_model.py` | 案例4：工程版模型，和脚本版只差一个 import |
 
 ### 第二章实测数据
 

@@ -1,13 +1,12 @@
-"""第三章 · 最小闭环：定义 Base → 定义 Model → 建 Engine → 开 Session → 查一条数据。
+"""案例 1：最小闭环 —— 用 ORM 查出第一条数据。
 
-这个文件和 app/ 里的工程化版本是同一件事的两种形态：
-    practice/ch03/mini_orm.py   ← 30 行，一个文件，看懂原理
-    app/models/user.py          ← 分层版，看工程怎么写
-对照读，进步最快。
+学到什么：
+    Engine / Base / Model / Session 四个对象各自的职责，
+    以及 session.get() 拿回来的是对象，不是字典。
 
-运行：
+怎么跑：
     export MYSQL_PASSWORD=你的密码
-    python practice/ch03/mini_orm.py
+    python practice/ch03/01_first_query.py
 """
 
 import os
@@ -23,12 +22,12 @@ engine = create_engine(
     f"mysql+pymysql://{os.getenv('MYSQL_USER', 'root')}:{os.getenv('MYSQL_PASSWORD', '')}"
     f"@{os.getenv('MYSQL_HOST', 'localhost')}:{os.getenv('MYSQL_PORT', '3306')}"
     f"/{os.getenv('MYSQL_DATABASE', 'learn_mysql')}?charset=utf8mb4",
-    # 💡 想看它生成的 SQL 就把下面这行打开
+    # 💡 想看它生成了什么 SQL，把 True 打开
     echo=False,
 )
 
 
-# ② Base：所有模型的基类，持有 metadata
+# ② Base：模型登记册，子类会自动注册到 Base.metadata
 class Base(DeclarativeBase):
     pass
 
@@ -51,11 +50,19 @@ class User(Base):
 if __name__ == "__main__":
     # ④ Session：一次业务操作的工作单元
     with Session(engine) as session:
-        # 按主键查，查不到返回 None，不抛异常
+        print("【1】按主键查一条")
         user = session.get(User, 1)
-        print("按主键查：", user)
+        print("    返回值类型：", type(user).__name__)
+        print("    对象本身   ：", user)
+        print("    取属性     ：", user.username, "|", user.balance, "|", user.phone)
 
-        # 全表扫一遍，看看 ORM 把每行都变成了对象
-        print("全部用户：")
+        print()
+        print("【2】查不到时返回什么")
+        missing = session.get(User, 999999)
+        print("    session.get(User, 999999) ->", missing)
+        print("    没有抛异常，只是 None")
+
+        print()
+        print("【3】把整张表取回来（每行都是一个对象）")
         for u in session.scalars(select(User).limit(5)):
-            print("  ", u)
+            print("   ", u)
