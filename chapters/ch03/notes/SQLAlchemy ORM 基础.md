@@ -42,6 +42,8 @@
 engine = create_engine(url, pool_pre_ping=True)  # 探活，解决 MySQL 8 小时断连
 ```
 
+> 💡 这一行能省掉一整类"服务空闲一夜，第二天第一个请求 500"的事故——它和第二章的 `ping=1` 是同一件事，只是换了个名字。
+
 连接池参数的细节在第二章讲过，这里只需要记住：**Engine 全进程建一次**。
 
 ## 1.3 Base：模型必须被 import 才会注册
@@ -106,6 +108,8 @@ with Session(engine) as session:
 
 1. 赋一个**相同**的值，对象进了 dirty 集合，但 flush 时不发 UPDATE
 2. 赋一个**不同**的值，UPDATE 只带变化的那一列，不是整行覆盖
+
+> 💡 记住这个顺序：**改属性 → 只打标记；commit → 对比快照 → 才发 SQL**。搞混这两步，就会误以为"我改了怎么没生效"或"我没改怎么被覆盖了"。
 
 这两条在案例 3 里可以亲眼看到。
 
@@ -188,6 +192,8 @@ python chapters/ch03/code/01_first_query.py
 - 一行数据被翻译成对象后，列名变成了属性名，IDE 能补全
 - `__repr__` 不是必须的，但没有它打印出来是 `<User object at 0x...>`，调试很痛苦
 
+**改一改**（1 分钟）：把 `session.get(User, 1)` 里的 1 改成 2，看输出变成谁；再改成 999999，确认拿到 `None` 而不是报错。
+
 ---
 
 ## 案例 2 · PyMySQL 和 ORM 的差别
@@ -243,6 +249,8 @@ python chapters/ch03/code/02_pymysql_vs_orm.py
 
 > ORM 替代的是**重复的样板 SQL**，不是复杂查询。报表、多表聚合照样手写。
 
+**改一改**（2 分钟）：在 `02_pymysql_vs_orm.py` 里给 User 加一个 `vip` 属性（用 `@property`，不是列），打印 `user.vip`，感受"对象能挂方法，字典不能"。
+
 ---
 
 ## 案例 3 · 脏检查与 UPDATE 触发条件
@@ -296,6 +304,8 @@ python chapters/ch03/code/03_dirty_check.py
 - 但同一列的并发冲突，ORM 管不了，要靠乐观锁或 `SELECT ... FOR UPDATE`
 - `rollback()` 会连内存里的修改一起丢掉
 
+**改一改**（2 分钟）：把 ③ 里的 `777.00` 改成当前值（`888.00`），再跑一次——你会看到 SQL 变回"没有 UPDATE"，印证第 ② 步的结论。
+
 ---
 
 ## 案例 4 · 脚本版和工程版，只差一个 import
@@ -343,9 +353,53 @@ python chapters/ch03/code/04_use_app_model.py
 
 这就是分层的价值：业务代码只写 `db.get(User, 1)`，不关心连接池多大、密码从哪读、`Base` 有几个子类。
 
+**改一改**（2 分钟）：在 `04_use_app_model.py` 里把 `from app.models import User` 换成 `from app.models.user import User`，跑通后再换回来——两条 import 路径都有效，感受一下"包 __init__ 做了什么"。
+
 ---
 
-# 三、跑不起来怎么办
+# 三、业务场景对话
+
+**Q：查一条数据，用 `session.get()` 还是 `select()`？**
+
+`get()` 只认主键，好处是**先查身份映射**——对象已经在 Session 里就直接返回，不查库。所以"按 id 取"永远用 `get()`。
+
+按非主键条件查（用户名、手机号）只能用 `select()`：
+
+```python
+user = session.execute(
+    select(User).where(User.username == "张三")
+).scalar_one_or_none()
+```
+
+> 💡 用 `scalar_one_or_none()` 而不是 `scalar_one()`：前者查不到返回 `None`，后者直接抛异常。
+
+**Q：公司里为什么禁止在循环里 `session.get()`？**
+
+这是典型的 **N+1 查询**：循环 100 次就是 100 次数据库往返。
+
+```python
+# ⚠️ 别这样
+for uid in user_ids:
+    print(session.get(User, uid).username)
+
+# 💡 一次捞回来
+users = session.scalars(select(User).where(User.id.in_(user_ids))).all()
+```
+
+**Q：ORM 和原生 SQL 怎么分工？**
+
+| 场景 | 用什么 |
+| --- | --- |
+| 常规 CRUD、单表、简单关联 | ORM |
+| 报表、多表聚合、窗口函数 | 原生 SQL（`session.execute(text(...))`） |
+| 百万级批量导入 | 原生 SQL |
+| 需要精确控制执行计划 | 原生 SQL |
+
+一句话：**ORM 替代的是样板 SQL，不是复杂 SQL。**
+
+---
+
+# 四、跑不起来怎么办
 
 | 报错 | 原因 | 解决 |
 | --- | --- | --- |
@@ -359,7 +413,49 @@ python chapters/ch03/code/04_use_app_model.py
 
 ---
 
-# 四、本章总结
+# 五、自测：3 道面试题
+
+### Q1. Engine 和 Session 的区别是什么？
+
+> **满分回答模板**
+>
+> 一句话：**Engine 管连接，Session 管事务和对象**。
+>
+> 展开三点：
+> 1. **生命周期不同**——Engine 是进程级的，应用启动建一次，跟着进程走；Session 是请求级或操作级的，用完就关。
+> 2. **职责不同**——Engine 内部持有连接池，负责"怎么连数据库"；Session 是工作单元，负责"这次业务做了哪些操作、要不要提交"。
+> 3. **线程安全性不同**——Engine 线程安全，可以共享；Session 不是，必须一个线程/请求一个。
+>
+> 加分项：Session 并不会一直占着连接，它只在执行 SQL 时才向 Engine 借，用完立刻还——这一点和第二章的池化是同一套机制。
+
+### Q2. ORM 的"脏检查"是怎么工作的？什么时候发 UPDATE？
+
+> **满分回答模板**
+>
+> 一句话：**改属性只打标记，flush 时才对比快照决定发不发 SQL**。
+>
+> 展开：
+> 1. 对象从库里查出来时，SQLAlchemy 保留一份属性快照；
+> 2. 执行 `user.balance = 100`，对象进入 Session 的 dirty 集合，但**此刻没有任何 SQL 发出**；
+> 3. `commit()` / `flush()` 时逐字段对比快照：没变就跳过，变了就生成 UPDATE，且**只带变化的列**。
+>
+> 加分项：因为只更新变化列，多人同时改同一行的不同字段不会互相覆盖；但同一字段的并发冲突仍然要靠乐观锁或 `SELECT ... FOR UPDATE` 解决，这是 ORM 管不了的。我们实测过：赋相同的值，flush 时确实不发 UPDATE。
+
+### Q3. 什么时候该用 ORM，什么时候该写原生 SQL？
+
+> **满分回答模板**
+>
+> 一句话：**常规 CRUD 用 ORM，复杂分析和批量用原生 SQL**。
+>
+> 展开：
+> - 用 ORM：单表增删改查、简单关联、需要事务管理的业务逻辑。收益是类型安全、防注入、可维护。
+> - 用原生 SQL：多表聚合报表、窗口函数、深层子查询、百万级批量导入。收益是可控、可优化、可 `EXPLAIN`。
+>
+> 加分项：两者可以共存，不是二选一。SQLAlchemy 里 `session.execute(text("..."))` 就能执行原生 SQL，还带参数绑定。
+
+---
+
+# 六、本章总结
 
 **三句话**：
 

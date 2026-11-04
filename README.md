@@ -43,7 +43,7 @@ mysql-learning/
 │   │   └── sql/                  # 建表 / 造数 / JOIN / 索引 / 设计（10 个脚本）
 │   ├── ch02/
 │   │   ├── notes/Python 数据库连接池.md
-│   │   ├── code/                 # pool.py / user_dao.py / benchmark.py
+│   │   ├── code/                 # 01_pool_basic.py / 02_benchmark.py / pool.py / user_dao.py
 │   │   │   └── legacy/           # 最早的 PyMySQL 用户管理系统（改造对象）
 │   │   └── sql/init_test_db.sql  # 用户管理系统建库脚本
 │   ├── ch03/
@@ -191,7 +191,8 @@ export MYSQL_PASSWORD=你的密码
 | `python chapters/ch01/code/phase5/test_explain.py` | EXPLAIN 前后对比索引效果 |
 | `python chapters/ch01/code/phase6/design_check.py` | 查看当前库的表结构 |
 | `python chapters/ch02/code/legacy/demo-user-manager-sys.py` | 裸连接版用户管理（改造前） |
-| `python chapters/ch02/code/benchmark.py` | 裸连接 vs 连接池压测（改造后） |
+| `python chapters/ch02/code/01_pool_basic.py` | 案例1：借还一条连接，看连接是否复用 |
+| `python chapters/ch02/code/02_benchmark.py` | 案例2：裸连接 vs 连接池压测 |
 | `python chapters/ch03/code/01_first_query.py` | 案例1：最小闭环，用 ORM 查出第一条数据 |
 | `python chapters/ch03/code/02_pymysql_vs_orm.py` | 案例2：PyMySQL 拿字典 vs ORM 拿对象 |
 | `python chapters/ch03/code/03_dirty_check.py` | 案例3：脏检查，验证什么时候才发 UPDATE |
