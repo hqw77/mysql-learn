@@ -137,7 +137,7 @@ export MYSQL_PASSWORD=你的密码
 
 **验证什么**：Engine / Base / Model / Session 四个对象能不能串起来。
 
-**文件**：`practice/ch03/01_first_query.py`
+**文件**：`chapters/ch03/code/01_first_query.py`
 
 **核心代码**（完整版见文件）：
 
@@ -160,7 +160,7 @@ with Session(engine) as session:            # ④ 工作单元
 **怎么跑**：
 
 ```bash
-python practice/ch03/01_first_query.py
+python chapters/ch03/code/01_first_query.py
 ```
 
 **你会看到**：
@@ -194,7 +194,7 @@ python practice/ch03/01_first_query.py
 
 **验证什么**：同一行数据，两种写法拿回来的东西到底差在哪。
 
-**文件**：`practice/ch03/02_pymysql_vs_orm.py`
+**文件**：`chapters/ch03/code/02_pymysql_vs_orm.py`
 
 **核心代码**：
 
@@ -212,7 +212,7 @@ print(user.username)
 **怎么跑**：
 
 ```bash
-python practice/ch03/02_pymysql_vs_orm.py
+python chapters/ch03/code/02_pymysql_vs_orm.py
 ```
 
 **你会看到**：
@@ -249,7 +249,7 @@ python practice/ch03/02_pymysql_vs_orm.py
 
 **验证什么**：改属性到底什么时候才真的写库。
 
-**文件**：`practice/ch03/03_dirty_check.py`
+**文件**：`chapters/ch03/code/03_dirty_check.py`
 
 这个案例用 `event` 监听器把 ORM 实际发出的 SQL 抓了下来：
 
@@ -262,7 +262,7 @@ def _record(conn, cursor, statement, parameters, context, executemany):
 **怎么跑**：
 
 ```bash
-python practice/ch03/03_dirty_check.py
+python chapters/ch03/code/03_dirty_check.py
 ```
 
 > 全程不 commit，最后 rollback，**不会改坏你的数据**。
@@ -302,7 +302,7 @@ python practice/ch03/03_dirty_check.py
 
 **验证什么**：`app/` 里的那份模型，用起来和案例 1 的本地模型有什么区别。
 
-**文件**：`practice/ch03/04_use_app_model.py`
+**文件**：`chapters/ch03/code/04_use_app_model.py`
 
 **核心代码**：
 
@@ -317,7 +317,7 @@ with SessionLocal() as db:
 **怎么跑**：
 
 ```bash
-python practice/ch03/04_use_app_model.py
+python chapters/ch03/code/04_use_app_model.py
 ```
 
 **你会看到**：
@@ -378,4 +378,4 @@ python practice/ch03/04_use_app_model.py
 
 ---
 
-<small>相关：[番外01 -- Alembic 数据库迁移](../番外/01-Alembic%20数据库迁移.md) · [第二章 -- Python 数据库连接池](../ch02/Python%20数据库连接池.md)</small>
+<small>相关：[番外01 -- Alembic 数据库迁移](../../extras/notes/01-Alembic%20数据库迁移.md) · [第二章 -- Python 数据库连接池](../../ch02/notes/Python%20数据库连接池.md)</small>

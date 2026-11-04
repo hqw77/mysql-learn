@@ -6,24 +6,28 @@ Python + MySQL 进阶实战学习仓库。
 
 ## 仓库怎么组织
 
-三件事，三层，互不越界：
+每章一个父目录，**笔记和代码分开**：
+
+```plain
+chapters/ch01/
+├── notes/     # 这一章的笔记（只有 .md）
+└── code/      # 这一章的代码（只有 .py）
+```
 
 | 层 | 目录 | 是什么 | 现在到哪 |
 | --- | --- | --- | --- |
-| 笔记本 | `notes/` | 每章一份笔记，一章一目录 | 第一 ~ 三章 |
-| 练习册 | `practice/` | 跟着笔记写的可运行脚本 | 第一 ~ 二章 |
+| 章节包 | `chapters/chNN/` | 每章一个，内含 `notes/` 与 `code/` | 第一 ~ 三章 |
 | 作品集 | `app/` | 最终要交付的 FastAPI 项目 | 第三章落地，等第四章长肉 |
 
 > `app/` 既不是空壳，也不是成品。它现在能跑通健康检查、能查库，但**业务代码是第四章才开始写的**。
-> 之所以提前搭骨架，是因为第三章要讲 Engine / Session 落在哪——搭完就停，不往下预付。
 
 ## 学习进度
 
 | 章节 | 主题 | 状态 | 笔记 | 代码 |
 | --- | --- | --- | --- | --- |
-| 第一章 | MySQL 进阶基础（建表 / JOIN / 事务 / 索引 / 设计 / 运维） | 已完成 | `notes/ch01/` | `practice/ch01/` + `sql/` |
-| 第二章 | Python 数据库连接池 | 已完成 | `notes/ch02/` | `practice/ch02/` |
-| 第三章 | SQLAlchemy ORM 基础 | 已完成 | `notes/ch03/` | `practice/ch03/` + `app/models/user.py` |
+| 第一章 | MySQL 进阶基础（建表 / JOIN / 事务 / 索引 / 设计 / 运维） | 已完成 | `chapters/ch01/notes/` | `chapters/ch01/code/` + `sql/` |
+| 第二章 | Python 数据库连接池 | 已完成 | `chapters/ch02/notes/` | `chapters/ch02/code/` |
+| 第三章 | SQLAlchemy ORM 基础 | 已完成 | `chapters/ch03/notes/` | `chapters/ch03/code/` + `app/models/user.py` |
 | 第四章 | SQLAlchemy ORM CRUD | 下一个 | — | — |
 | 第五~七章 | 进阶 / FastAPI / 完整项目 | 待开始 | — | — |
 
@@ -31,19 +35,20 @@ Python + MySQL 进阶实战学习仓库。
 
 ```plain
 mysql-learning/
-├── notes/                        # 笔记本：一章一目录
-│   ├── ch01/                     # 第一章：阶段0 ~ 阶段7（8 篇）
-│   ├── ch02/                     # 第二章：Python 数据库连接池
-│   ├── ch03/                     # 第三章：SQLAlchemy ORM 基础
-│   ├── 番外/                      # 主线上放不下的专题
-│   │   └── 01-Alembic 数据库迁移.md
-│   └── Python + MySQL 进阶实战教程.md   # 总纲
-├── practice/                     # 练习册：章号与笔记一一对齐
-│   ├── ch01/                     # 第一章的 7 个阶段脚本
-│   │   └── phase0/ ~ phase6/
-│   ├── ch02/                     # 连接池：pool.py / user_dao.py / benchmark.py
-│   ├── ch03/                     # ORM：4 个可执行案例（查询 / 对照 / 脏检查 / 工程版）
-│   └── legacy/                   # 最早的 PyMySQL 用户管理系统（第二章的改造对象）
+├── chapters/                     # 每一章：笔记与代码分开放
+│   ├── README.md                 # 总纲：学习路线与各章目标
+│   ├── ch01/
+│   │   ├── notes/                # 阶段0 ~ 阶段7（8 篇笔记）
+│   │   └── code/                 # phase0 ~ phase6（8 个脚本）
+│   ├── ch02/
+│   │   ├── notes/Python 数据库连接池.md
+│   │   └── code/                 # pool.py / user_dao.py / benchmark.py
+│   │       └── legacy/           # 最早的 PyMySQL 用户管理系统（改造对象）
+│   ├── ch03/
+│   │   ├── notes/SQLAlchemy ORM 基础.md
+│   │   └── code/                 # 01~04 四个可执行案例
+│   └── extras/                   # 番外：主线上放不下的专题
+│       └── notes/01-Alembic 数据库迁移.md
 ├── app/                          # 作品集：第 4 章开始长出业务代码
 │   ├── main.py                   # 入口：路由注册、异常处理、生命周期
 │   ├── deps.py                   # 依赖注入出口（get_db）
@@ -128,33 +133,33 @@ uvicorn app.main:app --reload
 
 | 阶段 | 主题 | 代码 |
 | --- | --- | --- |
-| [阶段0](notes/ch01/阶段0%20--%20环境搭建与连通.md) | 环境搭建与连通 | `practice/ch01/phase0/` |
-| [阶段1](notes/ch01/阶段1%20--%20单表%20CRUD%20与基础查询.md) | 单表 CRUD 与基础查询 | `practice/ch01/phase1/` |
-| [阶段2](notes/ch01/阶段2%20--%20建表进阶.md) | 建表进阶：类型、六大约束、规范 | `practice/ch01/phase2/` |
-| [阶段3](notes/ch01/阶段3%20--%20多表查询与%20JOIN.md) | 多表查询与 JOIN | `practice/ch01/phase3/` |
-| [阶段4](notes/ch01/阶段%204：事务与并发控制.md) | 事务与并发控制 | `practice/ch01/phase4/` |
-| [阶段5](notes/ch01/阶段5%20--%20索引与性能优化.md) | 索引与性能优化 | `practice/ch01/phase5/` |
-| [阶段6](notes/ch01/阶段6%20--%20数据库设计（范式与建模）.md) | 数据库设计：范式与建模 | `practice/ch01/phase6/` |
-| [阶段7](notes/ch01/阶段7%20--%20运维与架构.md) | 运维与架构 | — |
+| [阶段0](chapters/ch01/notes/阶段0%20--%20环境搭建与连通.md) | 环境搭建与连通 | `chapters/ch01/code/phase0/` |
+| [阶段1](chapters/ch01/notes/阶段1%20--%20单表%20CRUD%20与基础查询.md) | 单表 CRUD 与基础查询 | `chapters/ch01/code/phase1/` |
+| [阶段2](chapters/ch01/notes/阶段2%20--%20建表进阶.md) | 建表进阶：类型、六大约束、规范 | `chapters/ch01/code/phase2/` |
+| [阶段3](chapters/ch01/notes/阶段3%20--%20多表查询与%20JOIN.md) | 多表查询与 JOIN | `chapters/ch01/code/phase3/` |
+| [阶段4](chapters/ch01/notes/阶段%204：事务与并发控制.md) | 事务与并发控制 | `chapters/ch01/code/phase4/` |
+| [阶段5](chapters/ch01/notes/阶段5%20--%20索引与性能优化.md) | 索引与性能优化 | `chapters/ch01/code/phase5/` |
+| [阶段6](chapters/ch01/notes/阶段6%20--%20数据库设计（范式与建模）.md) | 数据库设计：范式与建模 | `chapters/ch01/code/phase6/` |
+| [阶段7](chapters/ch01/notes/阶段7%20--%20运维与架构.md) | 运维与架构 | — |
 
 ### 第二章 · Python 数据库连接池
 
 | 主题 | 笔记 |
 | --- | --- |
-| 连接池原理、PooledDB 参数详解、压测对比、面试题 | [第二章 -- Python 数据库连接池](notes/ch02/Python%20数据库连接池.md) |
+| 连接池原理、PooledDB 参数详解、压测对比、面试题 | [第二章 -- Python 数据库连接池](chapters/ch02/notes/Python%20数据库连接池.md) |
 
 ### 第三章 · SQLAlchemy ORM 基础
 
 | 主题 | 笔记 | 代码 |
 | --- | --- | --- |
-| Engine / Base / Model / Session 四件套、`Mapped[T]` 与 `mapped_column`、脏检查机制、四个可执行案例 | [第三章](notes/ch03/SQLAlchemy%20ORM%20基础.md) | `practice/ch03/01~04` + `app/models/user.py` |
-| 建表迁移单独成篇：`create_all` 为什么不适用、Alembic 基线、`include_object` 防误删 | [番外01 -- Alembic 数据库迁移](notes/番外/01-Alembic%20数据库迁移.md) | `migrations/` |
+| Engine / Base / Model / Session 四件套、`Mapped[T]` 与 `mapped_column`、脏检查机制、四个可执行案例 | [第三章](chapters/ch03/notes/SQLAlchemy%20ORM%20基础.md) | `chapters/ch03/code/01~04` + `app/models/user.py` |
+| 建表迁移单独成篇：`create_all` 为什么不适用、Alembic 基线、`include_object` 防误删 | [番外01 -- Alembic 数据库迁移](chapters/extras/notes/01-Alembic%20数据库迁移.md) | `migrations/` |
 
-完整学习路线见 [Python + MySQL 进阶实战教程](notes/Python%20+%20MySQL%20进阶实战教程.md)。
+完整学习路线见 [Python + MySQL 进阶实战教程](chapters/README.md)。
 
 ## 数据库迁移
 
-表结构变更一律走 Alembic，不要用 `Base.metadata.create_all`。完整讲解见 [番外01](notes/番外/01-Alembic%20数据库迁移.md)。
+表结构变更一律走 Alembic，不要用 `Base.metadata.create_all`。完整讲解见 [番外01](chapters/extras/notes/01-Alembic%20数据库迁移.md)。
 
 ```bash
 alembic current                          # 当前版本
@@ -169,7 +174,7 @@ alembic downgrade -1                     # 回退一步
 
 ## 练习代码怎么跑
 
-所有 `practice/` 下的脚本都通过环境变量读连接信息，先设置密码：
+所有 `chapters/*/code/` 下的脚本都通过环境变量读连接信息，先设置密码：
 
 ```bash
 export MYSQL_PASSWORD=你的密码
@@ -177,20 +182,20 @@ export MYSQL_PASSWORD=你的密码
 
 | 脚本 | 作用 |
 | --- | --- |
-| `python practice/ch01/phase0/check_connection.py` | 验证能否连通 MySQL |
-| `python practice/ch01/phase1/crud_basic.py` | 单表增删改查 |
-| `python practice/ch01/phase1/student_manager.py` | 控制台版学生管理（交互式） |
-| `python practice/ch01/phase2/create_tables.py` | 用 Python 执行 DDL |
-| `python practice/ch01/phase3/test_subquery.py` | 嵌套子查询 |
-| `python practice/ch01/phase4/transaction_test.py` | 转账事务与回滚 |
-| `python practice/ch01/phase5/test_explain.py` | EXPLAIN 前后对比索引效果 |
-| `python practice/ch01/phase6/design_check.py` | 查看当前库的表结构 |
-| `python practice/legacy/demo-user-manager-sys.py` | 裸连接版用户管理（改造前） |
-| `python practice/ch02/benchmark.py` | 裸连接 vs 连接池压测（改造后） |
-| `python practice/ch03/01_first_query.py` | 案例1：最小闭环，用 ORM 查出第一条数据 |
-| `python practice/ch03/02_pymysql_vs_orm.py` | 案例2：PyMySQL 拿字典 vs ORM 拿对象 |
-| `python practice/ch03/03_dirty_check.py` | 案例3：脏检查，验证什么时候才发 UPDATE |
-| `python practice/ch03/04_use_app_model.py` | 案例4：工程版模型，和脚本版只差一个 import |
+| `python chapters/ch01/code/phase0/check_connection.py` | 验证能否连通 MySQL |
+| `python chapters/ch01/code/phase1/crud_basic.py` | 单表增删改查 |
+| `python chapters/ch01/code/phase1/student_manager.py` | 控制台版学生管理（交互式） |
+| `python chapters/ch01/code/phase2/create_tables.py` | 用 Python 执行 DDL |
+| `python chapters/ch01/code/phase3/test_subquery.py` | 嵌套子查询 |
+| `python chapters/ch01/code/phase4/transaction_test.py` | 转账事务与回滚 |
+| `python chapters/ch01/code/phase5/test_explain.py` | EXPLAIN 前后对比索引效果 |
+| `python chapters/ch01/code/phase6/design_check.py` | 查看当前库的表结构 |
+| `python chapters/ch02/code/legacy/demo-user-manager-sys.py` | 裸连接版用户管理（改造前） |
+| `python chapters/ch02/code/benchmark.py` | 裸连接 vs 连接池压测（改造后） |
+| `python chapters/ch03/code/01_first_query.py` | 案例1：最小闭环，用 ORM 查出第一条数据 |
+| `python chapters/ch03/code/02_pymysql_vs_orm.py` | 案例2：PyMySQL 拿字典 vs ORM 拿对象 |
+| `python chapters/ch03/code/03_dirty_check.py` | 案例3：脏检查，验证什么时候才发 UPDATE |
+| `python chapters/ch03/code/04_use_app_model.py` | 案例4：工程版模型，和脚本版只差一个 import |
 
 ### 第二章实测数据
 
@@ -218,8 +223,8 @@ export MYSQL_PASSWORD=你的密码
 
 - **密码一律走环境变量 / `.env`**，代码里不出现明文。
 - `.env`、`.venv/`、`__pycache__/` 均已加入 `.gitignore`。
-- 笔记按章节目录组织（`notes/ch0N/`），练习代码与笔记章号一一对齐（`practice/ch0N/`）。
-- 应用代码与练习代码分离：`app/` 是作品集，`practice/` 是学习轨迹，两者不互相 import。
+- 每章一个目录：`chapters/chNN/`，里面 `notes/` 只放 `.md`，`code/` 只放 `.py`。
+- 应用代码与学习代码分离：`app/` 是作品集，`chapters/` 是学习轨迹，两者不互相 import。
 - 目录只在有内容时才建，不留空包。
 
 ## 常见问题

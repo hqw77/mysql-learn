@@ -6,7 +6,7 @@
 
 怎么跑（必须在仓库根目录执行）：
     export MYSQL_PASSWORD=你的密码
-    python practice/ch03/04_use_app_model.py
+    python chapters/ch03/code/04_use_app_model.py
 
 和案例 1 的关系：
     案例 1 的 User 是本地定义的；
@@ -18,7 +18,8 @@ import sys
 from pathlib import Path
 
 # 让脚本能从仓库根目录 import app 包
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+# 文件在 chapters/ch03/code/ 下，往上退三级才是仓库根
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
 from sqlalchemy import select  # noqa: E402
 

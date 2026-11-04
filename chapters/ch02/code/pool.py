@@ -1,6 +1,6 @@
 """连接池：进程内全局只建一次，所有 DAO 共用。
 
-对比 practice/legacy/demo-user-manager-sys.py：
+对比 chapters/ch02/code/legacy/demo-user-manager-sys.py：
     那边每个 UserDB 实例都 pymysql.connect() 一次，close() 是真断 TCP；
     这边 pymysql.connect() 只在池子初始化时按 mincached 预建，
     之后的 connection() 是"借"，close() 是"还"，连接一直活着。

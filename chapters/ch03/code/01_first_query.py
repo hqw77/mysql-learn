@@ -6,7 +6,7 @@
 
 怎么跑：
     export MYSQL_PASSWORD=你的密码
-    python practice/ch03/01_first_query.py
+    python chapters/ch03/code/01_first_query.py
 """
 
 import os

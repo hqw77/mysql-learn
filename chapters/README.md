@@ -161,24 +161,29 @@
 12. 本章知识总结
 
 ## 四、项目目录规范
+
+本仓库实际采用的划分（与最初设想相比，工程代码收进 `app/` 包，章节材料按章归档）：
+
 ```plain
 mysql-learning/
-├── .venv/
-├── config/
-├── database/
-│   ├── connection.py
-│   ├── pool.py
-│   └── session.py
-├── models/
-│   ├── user.py
-│   └── role.py
-├── schemas/
-├── services/
-├── routers/
-├── tests/
-├── sql/
-├── notes/
-├── main.py
+├── chapters/                 # 学习区：每章一个目录
+│   ├── ch01/
+│   │   ├── notes/            # 笔记（.md）
+│   │   └── code/             # 代码（.py）
+│   ├── ch02/ ... chNN/
+│   └── extras/               # 番外专题
+├── app/                      # 工程区：最终项目
+│   ├── main.py
+│   ├── deps.py
+│   ├── core/                 # config.py / exceptions.py
+│   ├── db/                   # base.py / engine.py / session.py
+│   ├── models/               # ORM 实体
+│   ├── schemas/              # Pydantic 模型
+│   ├── services/             # 业务逻辑
+│   └── routers/              # HTTP 路由
+├── migrations/               # Alembic 迁移
+├── sql/                      # 纯 SQL 脚本
+├── docs/                     # 架构、规划、文档规范
 ├── requirements.txt
 └── README.md
 ```

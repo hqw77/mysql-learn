@@ -190,7 +190,7 @@ GROUP BY p.id, p.title;
 + `RANK()`：如果有并列第一，会生成 1, 1, 3（并列占位）。
 
 ## 7. Python 实战：在代码里做多表查询
-在 `practice/ch01/phase3/` 新建 `multi_table_query.py`（如果没有文件夹请新建）。
+在 `chapters/ch01/code/phase3/` 新建 `multi_table_query.py`（如果没有文件夹请新建）。
 
 ```plain
 import pymysql

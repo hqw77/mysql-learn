@@ -8,7 +8,7 @@
 
 怎么跑：
     export MYSQL_PASSWORD=你的密码
-    python practice/ch03/03_dirty_check.py
+    python chapters/ch03/code/03_dirty_check.py
 
 注意：全程不 commit，最后 rollback，不会改坏你的数据。
 """

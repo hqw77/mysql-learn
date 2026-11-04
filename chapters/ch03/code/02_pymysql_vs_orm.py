@@ -6,7 +6,7 @@
 
 怎么跑：
     export MYSQL_PASSWORD=你的密码
-    python practice/ch03/02_pymysql_vs_orm.py
+    python chapters/ch03/code/02_pymysql_vs_orm.py
 """
 
 import os
