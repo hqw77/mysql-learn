@@ -42,6 +42,7 @@ mysql-learning/
 │   ├── ch01/                     # 第一章：阶段0 ~ 阶段7
 │   ├── 第二章 -- Python 数据库连接池.md
 │   ├── 第三章 -- SQLAlchemy ORM 基础.md
+│   ├── 番外01 -- Alembic 数据库迁移.md
 │   └── Python + MySQL 进阶实战教程.md
 ├── practice/                     # 学习过程的脚本，保留演进轨迹
 │   ├── phase0/ ~ phase6/         # 对应 ch01 各阶段
@@ -129,13 +130,14 @@ uvicorn app.main:app --reload
 
 | 主题 | 笔记 | 代码 |
 | --- | --- | --- |
-| Engine / Session / DeclarativeBase、`Mapped[T]` 与 `mapped_column`、Alembic 基线 | [第三章 -- SQLAlchemy ORM 基础](notes/第三章%20--%20SQLAlchemy%20ORM%20基础.md) | `app/models/user.py`、`migrations/` |
+| Engine / Base / Model / Session 四件套、`Mapped[T]` 与 `mapped_column`、脏检查机制、从 30 行到分层的演进 | [第三章 -- SQLAlchemy ORM 基础](notes/第三章%20--%20SQLAlchemy%20ORM%20基础.md) | `app/models/user.py` |
+| 建表迁移单独成篇：`create_all` 为什么不适用、Alembic 基线、`include_object` 防误删 | [番外01 -- Alembic 数据库迁移](notes/番外01%20--%20Alembic%20数据库迁移.md) | `migrations/` |
 
 完整学习路线见 [Python + MySQL 进阶实战教程](notes/Python%20+%20MySQL%20进阶实战教程.md)。
 
 ## 数据库迁移
 
-表结构变更一律走 Alembic，不要用 `Base.metadata.create_all`。
+表结构变更一律走 Alembic，不要用 `Base.metadata.create_all`。完整讲解见 [番外01](notes/番外01%20--%20Alembic%20数据库迁移.md)。
 
 ```bash
 alembic current                          # 当前版本
