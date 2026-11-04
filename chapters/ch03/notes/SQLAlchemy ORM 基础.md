@@ -2,7 +2,16 @@
 
 > **一句话**：ORM 就是把「发 SQL、拿字典、自己拼字符串」换成「拿对象、改属性、提交」。
 
-**学习方式**：本文分四块 —— 先讲知识（一），再给 4 个能跑的例子（二），然后解决跑不起来的情况（三），最后总结（四）。第一块读完就能跑案例 1，不用等全部读完。
+**学习方式**：本文分六块 —— 先讲知识（一），再给 4 个能跑的例子（二），然后是业务场景（三）、报错排查（四）、自测题（五）、总结与速查卡（六）。第一块读完就能跑案例 1，不用等全部读完。
+
+**分几次学**（不用一口气读完）：
+
+| 第几次 | 干什么 | 用时 | 读到哪 |
+| --- | --- | --- | --- |
+| 第 1 次 | 只读知识，不写代码 | 15 分钟 | 一、1.1 ~ 1.6 |
+| 第 2 次 | 跑 4 个案例 + 做「改一改」 | 20 分钟 | 二、案例 1 ~ 4 |
+| 第 3 次 | 看业务场景 + 自测 3 题 | 10 分钟 | 三、五 |
+| 以后 | 只翻章末速查卡 | 1 分钟 | 六、速查卡 |
 
 ---
 
@@ -44,6 +53,8 @@ engine = create_engine(url, pool_pre_ping=True)  # 探活，解决 MySQL 8 小�
 
 > 💡 这一行能省掉一整类"服务空闲一夜，第二天第一个请求 500"的事故——它和第二章的 `ping=1` 是同一件事，只是换了个名字。
 
+> 🔗 想验证：**案例 1**（Engine 有没有真的建起来）
+
 连接池参数的细节在第二章讲过，这里只需要记住：**Engine 全进程建一次**。
 
 ## 1.3 Base：模型必须被 import 才会注册
@@ -56,6 +67,8 @@ class Base(DeclarativeBase):
 它看着是空类，实际持有 `Base.metadata`——「本进程注册了哪些表」的登记表。每个子类自动登记。
 
 ⚠️ 写了 `app/models/order.py` 却没在任何地方 import，这张表就不在 `metadata` 里，迁移和建表都会漏掉它。所以 `app/models/__init__.py` 要把每个模型都 export 一次。
+
+> 🔗 想验证：**案例 4**（`app/models/__init__.py` 是怎么 export 的）
 
 ## 1.4 Model：类型声明和列定义是两件事
 
@@ -89,6 +102,8 @@ balance NUMERIC(10, 2) NOT NULL                    ← DDL 里什么都没有
 
 想和数据库结构一致，用 `server_default`；`default` 只是 Python 侧兜底，不进表结构。
 
+> 🔗 想验证：**案例 1**（`User` 模型怎么写）、**案例 2**（对象和字典差在哪）
+
 ## 1.5 Session：不线程安全
 
 ```python
@@ -99,6 +114,8 @@ with Session(engine) as session:
 一次业务操作一个 Session。它管三件事：事务边界、身份映射（同 id 查两次返回同一对象）、脏检查。
 
 ⚠️ 别跨线程共享 Session。
+
+> 🔗 想验证：**案例 1**（`with Session(engine)` 的写法与关闭）
 
 ## 1.6 脏检查：本章最反直觉的地方
 
@@ -112,6 +129,8 @@ with Session(engine) as session:
 > 💡 记住这个顺序：**改属性 → 只打标记；commit → 对比快照 → 才发 SQL**。搞混这两步，就会误以为"我改了怎么没生效"或"我没改怎么被覆盖了"。
 
 这两条在案例 3 里可以亲眼看到。
+
+> 🔗 想验证：**案例 3**（用 `event` 抓真实 SQL，看它发不发 UPDATE）
 
 ---
 
@@ -138,6 +157,8 @@ export MYSQL_PASSWORD=你的密码
 ---
 
 ## 案例 1 · 第一条查询
+
+> 🔗 对应知识点：**1.2 Engine · 1.3 Base · 1.4 Model · 1.5 Session**
 
 **验证什么**：Engine / Base / Model / Session 四个对象能不能串起来。
 
@@ -198,6 +219,8 @@ python chapters/ch03/code/01_first_query.py
 
 ## 案例 2 · PyMySQL 和 ORM 的差别
 
+> 🔗 对应知识点：**1.1 四个角色**（同一件事的两种写法）
+
 **验证什么**：同一行数据，两种写法拿回来的东西到底差在哪。
 
 **文件**：`chapters/ch03/code/02_pymysql_vs_orm.py`
@@ -255,6 +278,8 @@ python chapters/ch03/code/02_pymysql_vs_orm.py
 
 ## 案例 3 · 脏检查与 UPDATE 触发条件
 
+> 🔗 对应知识点：**1.6 脏检查**
+
 **验证什么**：改属性到底什么时候才真的写库。
 
 **文件**：`chapters/ch03/code/03_dirty_check.py`
@@ -309,6 +334,8 @@ python chapters/ch03/code/03_dirty_check.py
 ---
 
 ## 案例 4 · 脚本版和工程版，只差一个 import
+
+> 🔗 对应知识点：**1.2 Engine · 1.3 Base**（它们在 `app/` 里长什么样）
 
 **验证什么**：`app/` 里的那份模型，用起来和案例 1 的本地模型有什么区别。
 
@@ -469,6 +496,52 @@ users = session.scalars(select(User).where(User.id.in_(user_ids))).all()
 - [ ] 解释 `session.get(User, 1)` 和 `select(User).where(...)` 的区别
 - [ ] 解释赋相同值为什么不会发 UPDATE
 - [ ] 说出 `server_default` 和 `default` 生成的 DDL 差在哪
+
+---
+
+## 速查卡（一周后回来看这里）
+
+**四件套骨架**
+
+```python
+engine = create_engine(url, pool_pre_ping=True)     # 全局一个
+
+class Base(DeclarativeBase):                        # 全局一个
+    pass
+
+class User(Base):                                   # 一张表一个
+    __tablename__ = "users"
+    id: Mapped[int] = mapped_column(INTEGER(unsigned=True), primary_key=True)
+
+with Session(engine) as session:                    # 一次操作一个
+    session.get(User, 1)
+```
+
+**常用操作**
+
+| 想干什么 | 写法 |
+| --- | --- |
+| 按主键查 | `session.get(User, 1)`（查不到返回 `None`） |
+| 按条件查 | `session.execute(select(User).where(...)).scalar_one_or_none()` |
+| 批量查 | `session.scalars(select(User).where(User.id.in_(ids))).all()` |
+| 改字段 | `user.balance = 100` 然后 `session.commit()` |
+| 撤销 | `session.rollback()` |
+
+**三句话**
+
+1. Engine 建一次，Session 建很多次
+2. 改属性不发 SQL，commit 才发，而且只发变化的列
+3. `server_default` 进 DDL，`default` 只在 Python 侧
+
+**类型对照（最常用的五个）**
+
+| Python | SQLAlchemy | MySQL |
+| --- | --- | --- |
+| `int` | `INTEGER(unsigned=True)` | `INT UNSIGNED` |
+| `str` | `String(50)` | `VARCHAR(50)` |
+| `Decimal` | `Numeric(10, 2)` | `DECIMAL(10,2)` |
+| `bool` | `TINYINT(1)` | `TINYINT(1)` |
+| `datetime` | `DateTime` | `DATETIME` |
 
 **下一步**：第四章用 `session.add()` / `delete()` 写真正的增删改查，并把这些操作封装进 `app/services/`。
 
