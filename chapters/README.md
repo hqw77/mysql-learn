@@ -169,7 +169,8 @@ mysql-learning/
 ├── chapters/                 # 学习区：每章一个目录
 │   ├── ch01/
 │   │   ├── notes/            # 笔记（.md）
-│   │   └── code/             # 代码（.py）
+│   │   ├── code/             # 代码（.py）
+│   │   └── sql/              # 纯 SQL 脚本（有才建）
 │   ├── ch02/ ... chNN/
 │   └── extras/               # 番外专题
 ├── app/                      # 工程区：最终项目
@@ -182,7 +183,6 @@ mysql-learning/
 │   ├── services/             # 业务逻辑
 │   └── routers/              # HTTP 路由
 ├── migrations/               # Alembic 迁移
-├── sql/                      # 纯 SQL 脚本
 ├── docs/                     # 架构、规划、文档规范
 ├── requirements.txt
 └── README.md

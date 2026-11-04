@@ -25,7 +25,7 @@ chapters/ch01/
 
 | 章节 | 主题 | 状态 | 笔记 | 代码 |
 | --- | --- | --- | --- | --- |
-| 第一章 | MySQL 进阶基础（建表 / JOIN / 事务 / 索引 / 设计 / 运维） | 已完成 | `chapters/ch01/notes/` | `chapters/ch01/code/` + `sql/` |
+| 第一章 | MySQL 进阶基础（建表 / JOIN / 事务 / 索引 / 设计 / 运维） | 已完成 | `chapters/ch01/notes/` | `chapters/ch01/code/` + `chapters/ch01/sql/` |
 | 第二章 | Python 数据库连接池 | 已完成 | `chapters/ch02/notes/` | `chapters/ch02/code/` |
 | 第三章 | SQLAlchemy ORM 基础 | 已完成 | `chapters/ch03/notes/` | `chapters/ch03/code/` + `app/models/user.py` |
 | 第四章 | SQLAlchemy ORM CRUD | 下一个 | — | — |
@@ -39,11 +39,13 @@ mysql-learning/
 │   ├── README.md                 # 总纲：学习路线与各章目标
 │   ├── ch01/
 │   │   ├── notes/                # 阶段0 ~ 阶段7（8 篇笔记）
-│   │   └── code/                 # phase0 ~ phase6（8 个脚本）
+│   │   ├── code/                 # phase0 ~ phase6（8 个脚本）
+│   │   └── sql/                  # 建表 / 造数 / JOIN / 索引 / 设计（10 个脚本）
 │   ├── ch02/
 │   │   ├── notes/Python 数据库连接池.md
-│   │   └── code/                 # pool.py / user_dao.py / benchmark.py
-│   │       └── legacy/           # 最早的 PyMySQL 用户管理系统（改造对象）
+│   │   ├── code/                 # pool.py / user_dao.py / benchmark.py
+│   │   │   └── legacy/           # 最早的 PyMySQL 用户管理系统（改造对象）
+│   │   └── sql/init_test_db.sql  # 用户管理系统建库脚本
 │   ├── ch03/
 │   │   ├── notes/SQLAlchemy ORM 基础.md
 │   │   └── code/                 # 01~04 四个可执行案例
@@ -63,11 +65,9 @@ mysql-learning/
 │   │   └── user.py               # User → learn_mysql.users
 │   └── routers/
 │       └── health.py             # /health、/health/db
-├── migrations/                   # Alembic 迁移（第三章产物）
+├── migrations/                   # Alembic 迁移（第三章产物，依赖 app/db/base.py）
 │   ├── env.py                    # 从 .env 取连接串，include_object 防误删
 │   └── versions/0001_initial_schema.py
-├── sql/                          # 纯 SQL 脚本
-│   └── user-manager-sys/         # 用户管理系统建库脚本
 ├── docs/                         # 架构说明 · 教程规划 · 文档排版模式
 ├── alembic.ini
 ├── .env.example

@@ -25,7 +25,7 @@
 │                    │ test_db           │                                         │
 │                    └───────────────────┘                                         │
 │                                                                                  │
-│   支撑材料：sql/（建表造数）  docs/（架构·规划·文档规范）  migrations/（迁移）      │
+│   支撑材料：docs/（架构·规划·规范）  migrations/（Alembic 迁移）  alembic.ini       │
 └──────────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -202,13 +202,11 @@ flowchart LR
     subgraph repo["mysql-learning"]
         direction TB
         app["app/<br/>作品集"]
-        chapters["chapters/<br/>笔记 + 代码"]
-        sql["sql/<br/>建表造数"]
+        chapters["chapters/<br/>笔记 + 代码 + SQL"]
     end
 
     app -->|SQLAlchemy| mysql[("MySQL")]
-    chapters -->|PyMySQL / PooledDB| mysql
-    sql -->|DDL / DML| mysql
+    chapters -->|PyMySQL / PooledDB / DDL| mysql
     chapters -.->|对应讲解| app
 ```
 

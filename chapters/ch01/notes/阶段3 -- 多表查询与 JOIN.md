@@ -5,7 +5,7 @@
 + 掌握 MySQL 8.0 的 `窗口函数`，解决排名问题。
 
 ## 2. 准备工作：准备测试数据
-为了练手，我们需要往阶段 2 建好的电商四表（`users`、`products`、`orders`、`order_items`）里塞入一些数据。打开 `sql/03-mock-data.sql`，执行以下代码：
+为了练手，我们需要往阶段 2 建好的电商四表（`users`、`products`、`orders`、`order_items`）里塞入一些数据。打开 `../sql/03-mock-data.sql`，执行以下代码：
 
 ```plain
 USE learn_mysql;

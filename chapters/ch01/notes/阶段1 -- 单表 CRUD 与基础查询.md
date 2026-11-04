@@ -23,7 +23,7 @@ _(建好后，可以在终端敲 _`_DESC students;_`_ 看看表结构)_
 ![](https://cdn.nlark.com/yuque/0/2026/png/54927389/1793544829453-8084a806-3acf-4df7-bf85-af6f4d9b3e5d.png)
 
 ## 2. 核心 SQL 语法（要背熟）
-打开你项目里的 `sql/01-crud.sql`，把这些基础语法敲一遍并执行：
+打开你项目里的 `../sql/01-crud.sql`，把这些基础语法敲一遍并执行：
 
 **增 (INSERT)**
 
