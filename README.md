@@ -63,7 +63,7 @@ mysql-learning/
 │   └── versions/0001_initial_schema.py
 ├── sql/                          # 纯 SQL 脚本
 │   └── user-manager-sys/         # 用户管理系统建库脚本
-├── docs/                         # 架构说明
+├── docs/                         # 架构说明 + 文档排版模式
 ├── alembic.ini
 ├── .env.example
 └── requirements.txt
