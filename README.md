@@ -104,6 +104,8 @@ mysql-learning/
 
 > `chapters/` 是学习资料(笔记 + 案例),`project/` 是能跑起来的工程。两者独立:
 > 章节案例会通过 `sys.path` 引用 `project/app`,但工程本身不依赖 `chapters/`。
+>
+> 工程的使用说明(接口清单、配置项、认证流程、设计说明)见 [project/README.md](project/README.md)。
 
 ## 快速开始
 
