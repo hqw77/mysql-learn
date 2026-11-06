@@ -32,7 +32,7 @@ chapters/ch01/
 | 第五章 | SQLAlchemy 进阶（关系 / N+1 / 并发 / 迁移） | 已完成 | `chapters/ch05/notes/` | `chapters/ch05/code/` + `project/app/models/order.py`、`role.py` |
 | 第六章 | FastAPI + MySQL | 已完成 | `chapters/ch06/notes/` | `chapters/ch06/code/` + `project/app/schemas/`、`project/app/routers/users.py` |
 | 第七章 | 完整项目实战（认证 / 权限 / 事务 / 测试） | 已完成 | `chapters/ch07/notes/` | `chapters/ch07/code/` + `project/app/core/security.py`、`project/app/routers/auth.py`、`project/tests/` |
-| 第八章 | 面试题与项目复盘 | 下一个 | — | — |
+| 第八章 | 面试题与项目复盘 | 已完成 | `chapters/ch08/notes/` | — |
 
 ## 目录结构
 
@@ -64,6 +64,8 @@ mysql-learning/
 │   ├── ch07/
 │   │   ├── notes/完整项目实战.md
 │   │   └── code/                 # 01~04（哈希、注册登录、鉴权、转账）
+│   ├── ch08/
+│   │   └── notes/面试题与项目复盘.md
 │   └── extras/                   # 番外：主线上放不下的专题
 │       └── notes/01-Alembic 数据库迁移.md
 ├── project/                      # 作品集：可运行的工程
@@ -211,6 +213,12 @@ uvicorn app.main:app --reload
 | 主题 | 笔记 | 代码 |
 | --- | --- | --- |
 | 密码哈希(argon2)、注册登录、JWT 签发校验、鉴权依赖、角色权限、转账事务、pytest 自动化测试 | [第七章](chapters/ch07/notes/完整项目实战.md) | `chapters/ch07/code/01~04` + `project/app/core/security.py`、`project/app/routers/auth.py`、`project/tests/` |
+
+### 第八章 · 面试题与项目复盘
+
+| 主题 | 笔记 |
+| --- | --- |
+| 七章知识地图、12 道高频面试题答题要点、项目复盘与踩坑记录、简历写法、下一步路线 | [第八章](chapters/ch08/notes/面试题与项目复盘.md) |
 
 完整学习路线见 [Python + MySQL 进阶实战教程](chapters/README.md)。
 
