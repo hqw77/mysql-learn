@@ -123,7 +123,7 @@ version_num
 
 ```bash
 # 1. 先改模型
-#    app/models/user.py 中增加:
+#    project/app/models/user.py 中增加:
 #    password_hash: Mapped[str] = mapped_column(String(255))
 
 # 2. 生成迁移文件

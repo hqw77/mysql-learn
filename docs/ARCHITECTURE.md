@@ -1,7 +1,7 @@
 # 项目架构
 
 > 更新时间：2026-11-04 · 章节结构改为 `chapters/chNN/{notes,code}`
-> 说明：`app/` 是作品集（第 4 章起长业务代码）,`chapters/` 是学习轨迹,两者互不 import。
+> 说明：`project/app/` 是作品集（第 4 章起长业务代码）,`chapters/` 是学习轨迹,两者互不 import。
 
 ## 1. 全貌
 
@@ -9,7 +9,7 @@
 ┌──────────────────────────── mysql-learning（学习仓库）────────────────────────────┐
 │                                                                                  │
 │   ┌────────────────────────┐              ┌────────────────────────┐             │
-│   │  app/  作品集           │              │  chapters/  学习区      │             │
+│   │  project/app/  作品集           │              │  chapters/  学习区      │             │
 │   │  FastAPI 分层应用       │              │  每章一个目录            │             │
 │   │  （第 4 章起长肉）      │              │  chNN/notes + chNN/code │             │
 │   └───────────┬────────────┘              └───────────┬────────────┘             │
@@ -29,7 +29,7 @@
 └──────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-## 2. 应用分层（app/）
+## 2. 应用分层（project/app/）
 
 调用方向**单向向下**,反向依赖视为设计错误。
 
@@ -42,33 +42,29 @@
                     └───────────────┬───────────────┘
                                     ▼
         ┌───────────────────────────────────────────────────────┐
-        │  app/main.py            ✅ 已实现                      │
-        │    · FastAPI 实例                                     │
-        │    · lifespan：启动预热 / 关闭时 engine.dispose()      │
+        │  project/app/main.py        ✅ 注册 4 个路由            │
+        │    · lifespan：关闭时 engine.dispose()                 │
         │    · exception_handler：AppError → {"detail": ...}     │
-        │    · include_router()                                 │
         └───────────────────────────┬───────────────────────────┘
                                     ▼
         ┌───────────────────────────────────────────────────────┐
-        │  app/routers/*          ⚠️ 仅有 health.py              │
+        │  project/app/routers/*      ✅ health/auth/users/wallet│
         │    入参校验 · 状态码 · Depends(get_db)                 │
         │    禁止：写 SQL、写业务规则                             │
         └───────────────────────────┬───────────────────────────┘
                                     ▼
         ┌───────────────────────────────────────────────────────┐
-        │  app/services/*         ❌ 空,待第四章填充            │
+        │  project/app/services/*     ✅ user / auth service     │
         │    业务规则 · 事务边界 · 抛 AppError                   │
         └───────────────────────────┬───────────────────────────┘
                                     ▼
         ┌───────────────────────────────────────────────────────┐
-        │  app/models/*           ✅ User 模型（第三章）          │
-        │    SQLAlchemy 实体映射                                 │
+        │  project/app/models/*       ✅ User / Order / Role     │
+        │  project/app/schemas/*      ✅ 请求响应模型             │
         └───────────────────────────┬───────────────────────────┘
                                     ▼
         ┌───────────────────────────────────────────────────────┐
-        │  app/db/session.py      ✅ SessionLocal + get_db       │
-        │  app/db/engine.py       ✅ Engine + QueuePool          │
-        │  app/db/base.py         ✅ DeclarativeBase             │
+        │  project/app/db/*           ✅ Engine + Session + Base │
         └───────────────────────────┬───────────────────────────┘
                                     ▼
                               MySQL 8.0.42
@@ -78,9 +74,9 @@
 
 | 模块 | 谁在用 | 作用 |
 | --- | --- | --- |
-| `app/core/config.py` | `db/engine.py` | 读 `.env`,输出连接串与池参数 |
-| `app/core/exceptions.py` | `services/`（未来）、`main.py` | 业务异常定义 → 统一 HTTP 映射 |
-| `app/deps.py` | `routers/` | 依赖出口,隔离 router 与 db |
+| `project/app/core/config.py` | `db/engine.py` | 读 `.env`,输出连接串与池参数 |
+| `project/app/core/exceptions.py` | `services/`（未来）、`main.py` | 业务异常定义 → 统一 HTTP 映射 |
+| `project/app/deps.py` | `routers/` | 依赖出口,隔离 router 与 db |
 
 ## 3. 一次 `/health/db` 请求的完整链路
 
@@ -89,15 +85,15 @@
         │
 ②      ▼  uvicorn 收到请求,交给 FastAPI
         │
-③      ▼  app/main.py 路由匹配 → health 路由
+③      ▼  project/app/main.py 路由匹配 → health 路由
         │
-④      ▼  app/routers/health.py::health_db(db: Session = Depends(get_db))
+④      ▼  project/app/routers/health.py::health_db(db: Session = Depends(get_db))
         │     FastAPI 解析 Depends,调用 get_db()
         │
-⑤      ▼  app/deps.py → app/db/session.py::get_db()
+⑤      ▼  project/app/deps.py → project/app/db/session.py::get_db()
         │     SessionLocal() 从连接池取一条连接
         │
-⑥      ▼  app/db/engine.py::engine（QueuePool,pool_pre_ping=True）
+⑥      ▼  project/app/db/engine.py::engine（QueuePool,pool_pre_ping=True）
         │
 ⑦      ▼  SQLAlchemy → PyMySQL → TCP 3306
         │
@@ -110,7 +106,7 @@
 
 ## 4. 两条数据访问路径
 
-仓库里同时存在两套访问方式,这是刻意的：`chapters/*/code/` 用裸驱动理解原理,`app/` 用 ORM 做工程。
+仓库里同时存在两套访问方式,这是刻意的：`chapters/*/code/` 用裸驱动理解原理,`project/app/` 用 ORM 做工程。
 
 | 维度 | practice 路径 | app 路径 |
 | --- | --- | --- |
@@ -118,7 +114,7 @@
 | 连接池 | 手写 `PooledDB(...)` | `create_engine` 自带 `QueuePool` |
 | 池参数 | `mincached` / `maxcached` / `maxconnections` / `blocking` / `ping` | `pool_size` / `max_overflow` / `pool_recycle` / `pool_pre_ping` |
 | 事务 | `conn.commit()` / `rollback()` | `Session.commit()` / `rollback()` |
-| 代表文件 | `chapters/ch02/code/pool.py` | `app/db/engine.py` |
+| 代表文件 | `chapters/ch02/code/pool.py` | `project/app/db/engine.py` |
 
 第二章的结论在这里直接复用：**`close()` 在池化语境下是归还,不是断开**。SQLAlchemy 的 `Session.close()` 同理,归还连接但不销毁池。
 
@@ -170,17 +166,17 @@
 flowchart TD
     client["客户端<br/>curl / Swagger UI"]
     uvicorn["uvicorn<br/>ASGI Server"]
-    main["app/main.py<br/>FastAPI 实例 + 异常处理"]
-    router["app/routers/*<br/>HTTP 层"]
-    deps["app/deps.py<br/>依赖出口"]
-    session["app/db/session.py<br/>SessionLocal / get_db"]
-    engine["app/db/engine.py<br/>Engine + QueuePool"]
+    main["project/app/main.py<br/>FastAPI 实例 + 异常处理"]
+    router["project/app/routers/*<br/>HTTP 层"]
+    deps["project/app/deps.py<br/>依赖出口"]
+    session["project/app/db/session.py<br/>SessionLocal / get_db"]
+    engine["project/app/db/engine.py<br/>Engine + QueuePool"]
     db[("MySQL 8.0.42<br/>learn_mysql / test_db")]
 
-    services["app/services/*<br/>业务层（待建）"]
-    models["app/models/*<br/>ORM（User）"]
-    config["app/core/config.py<br/>读 .env"]
-    exceptions["app/core/exceptions.py"]
+    services["project/app/services/*<br/>业务层（待建）"]
+    models["project/app/models/*<br/>ORM（User）"]
+    config["project/app/core/config.py<br/>读 .env"]
+    exceptions["project/app/core/exceptions.py"]
 
     client -->|HTTP| uvicorn
     uvicorn --> main
@@ -206,7 +202,7 @@ flowchart TD
 flowchart LR
     subgraph repo["mysql-learning"]
         direction TB
-        app["app/<br/>作品集"]
+        app["project/app/<br/>作品集"]
         chapters["chapters/<br/>笔记 + 代码 + SQL"]
     end
 
@@ -225,4 +221,4 @@ flowchart LR
                             ──► 第七章：认证、测试、完整项目收口
 ```
 
-`app/` 当前是一个**能提供完整用户 API 的应用**：`/users` 的增删改查、分页、参数校验、异常映射都已经跑通,`alembic check` 与库结构一致。还缺认证（登录/密码哈希）、权限校验和自动化测试——那是第七章的事。
+`project/app/` 当前是一个**能提供完整用户 API 的应用**：`/users` 的增删改查、分页、参数校验、异常映射都已经跑通,`alembic check` 与库结构一致。还缺认证（登录/密码哈希）、权限校验和自动化测试——那是第七章的事。

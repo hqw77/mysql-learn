@@ -162,7 +162,7 @@
 
 ## 四、项目目录规范
 
-本仓库实际采用的划分（与最初设想相比,工程代码收进 `app/` 包,章节材料按章归档）：
+本仓库实际采用的划分（与最初设想相比,工程代码收进 `project/app/` 包,章节材料按章归档）：
 
 ```plain
 mysql-learning/
@@ -173,7 +173,7 @@ mysql-learning/
 │   │   └── sql/              # 纯 SQL 脚本（有才建）
 │   ├── ch02/ ... chNN/
 │   └── extras/               # 番外专题
-├── app/                      # 工程区：最终项目
+├── project/app/                      # 工程区：最终项目
 │   ├── main.py
 │   ├── deps.py
 │   ├── core/                 # config.py / exceptions.py

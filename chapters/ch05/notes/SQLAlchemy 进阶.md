@@ -80,14 +80,14 @@ alembic current          # 输出 0002_roles (head)
 在"一"的一方（`User`）定义集合属性,在"多"的一方（`Order`）定义单个对象属性,两者通过 `back_populates` 相互引用。
 
 ```python
-# app/models/user.py
+# project/app/models/user.py
 orders: Mapped[list["Order"]] = relationship(
     back_populates="user",
     order_by="Order.id",
     primaryjoin="foreign(Order.user_id) == User.id",
 )
 
-# app/models/order.py
+# project/app/models/order.py
 user: Mapped["User"] = relationship(
     primaryjoin="foreign(Order.user_id) == User.id",
     back_populates="orders",
@@ -211,7 +211,7 @@ rows = db.execute(
 ### 5.4.2 关联表定义
 
 ```python
-# app/models/role.py
+# project/app/models/role.py
 user_roles = Table(
     "user_roles",
     Base.metadata,
@@ -505,7 +505,7 @@ db.execute(
 | 错误信息 | 原因 | 解决方法 |
 | --- | --- | --- |
 | `NoForeignKeysError: Could not determine join condition` | 未声明 `primaryjoin`,或仅一端声明 | 两端都加 `primaryjoin="foreign(...) == ..."` |
-| `InvalidRequestError: mapper configuration failed` | 模型未导入,关系找不到目标类 | 在 `app/models/__init__.py` 中导出 |
+| `InvalidRequestError: mapper configuration failed` | 模型未导入,关系找不到目标类 | 在 `project/app/models/__init__.py` 中导出 |
 | `Table 'user_roles' doesn't exist` | 迁移未执行 | `alembic upgrade head` |
 | 接口响应缓慢、日志显示大量查询 | N+1 | 增加 `selectinload` |
 | 余额、库存数值异常偏小 | 丢更新 | 使用锁或原子运算 |

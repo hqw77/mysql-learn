@@ -150,7 +150,7 @@ def get_user():
     engine = create_engine(url)    # 每次调用都建一个新池,性能灾难
     ...
 
-# 正确写法：在 app/db/engine.py 建一次,别处直接 import
+# 正确写法：在 project/app/db/engine.py 建一次,别处直接 import
 from app.db.engine import engine
 ```
 
@@ -173,7 +173,7 @@ class Base(DeclarativeBase):
 
 每个继承 `Base` 的类都会自动注册到 `metadata` 中。
 
-**注意**：模型必须被 import 过才会注册。如果写了 `app/models/order.py` 但没有地方 import 它,`metadata` 里就没有这张表,建表和迁移都会漏掉。
+**注意**：模型必须被 import 过才会注册。如果写了 `project/app/models/order.py` 但没有地方 import 它,`metadata` 里就没有这张表,建表和迁移都会漏掉。
 
 ### 3.4.2 定义模型
 

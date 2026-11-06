@@ -14,7 +14,7 @@ import time
 import warnings
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "project"))
 
 warnings.filterwarnings("ignore")   # 屏蔽 TestClient 的依赖弃用提示,让输出干净
 

@@ -17,9 +17,9 @@ chapters/ch01/
 | 层 | 目录 | 是什么 | 现在到哪 |
 | --- | --- | --- | --- |
 | 章节包 | `chapters/chNN/` | 每章一个,内含 `notes/` 与 `code/` | 第一 ~ 三章 |
-| 作品集 | `app/` | 最终要交付的 FastAPI 项目 | 已能提供完整用户 API |
+| 作品集 | `project/app/` | 最终要交付的 FastAPI 项目 | 已能提供完整用户 API |
 
-> `app/` 不再是空壳：第三章搭骨架,第四~六章陆续长出了 services、models（关系）、schemas 和 routers。
+> `project/app/` 不再是空壳：第三章搭骨架,第四~六章陆续长出了 services、models（关系）、schemas 和 routers。
 
 ## 学习进度
 
@@ -27,11 +27,11 @@ chapters/ch01/
 | --- | --- | --- | --- | --- |
 | 第一章 | MySQL 进阶基础（建表 / JOIN / 事务 / 索引 / 设计 / 运维） | 已完成 | `chapters/ch01/notes/` | `chapters/ch01/code/` + `chapters/ch01/sql/` |
 | 第二章 | Python 数据库连接池 | 已完成 | `chapters/ch02/notes/` | `chapters/ch02/code/` |
-| 第三章 | SQLAlchemy ORM 基础 | 已完成 | `chapters/ch03/notes/` | `chapters/ch03/code/` + `app/models/user.py` |
-| 第四章 | SQLAlchemy ORM CRUD | 已完成 | `chapters/ch04/notes/` | `chapters/ch04/code/` + `app/services/` |
-| 第五章 | SQLAlchemy 进阶（关系 / N+1 / 并发 / 迁移） | 已完成 | `chapters/ch05/notes/` | `chapters/ch05/code/` + `app/models/order.py`、`role.py` |
-| 第六章 | FastAPI + MySQL | 已完成 | `chapters/ch06/notes/` | `chapters/ch06/code/` + `app/schemas/`、`app/routers/users.py` |
-| 第七章 | 完整项目实战（认证 / 权限 / 事务 / 测试） | 已完成 | `chapters/ch07/notes/` | `chapters/ch07/code/` + `app/core/security.py`、`app/routers/auth.py`、`tests/` |
+| 第三章 | SQLAlchemy ORM 基础 | 已完成 | `chapters/ch03/notes/` | `chapters/ch03/code/` + `project/app/models/user.py` |
+| 第四章 | SQLAlchemy ORM CRUD | 已完成 | `chapters/ch04/notes/` | `chapters/ch04/code/` + `project/app/services/` |
+| 第五章 | SQLAlchemy 进阶（关系 / N+1 / 并发 / 迁移） | 已完成 | `chapters/ch05/notes/` | `chapters/ch05/code/` + `project/app/models/order.py`、`role.py` |
+| 第六章 | FastAPI + MySQL | 已完成 | `chapters/ch06/notes/` | `chapters/ch06/code/` + `project/app/schemas/`、`project/app/routers/users.py` |
+| 第七章 | 完整项目实战（认证 / 权限 / 事务 / 测试） | 已完成 | `chapters/ch07/notes/` | `chapters/ch07/code/` + `project/app/core/security.py`、`project/app/routers/auth.py`、`project/tests/` |
 | 第八章 | 面试题与项目复盘 | 下一个 | — | — |
 
 ## 目录结构
@@ -66,39 +66,44 @@ mysql-learning/
 │   │   └── code/                 # 01~04（哈希、注册登录、鉴权、转账）
 │   └── extras/                   # 番外：主线上放不下的专题
 │       └── notes/01-Alembic 数据库迁移.md
-├── app/                          # 作品集：第 4 章开始长出业务代码
-│   ├── main.py                   # 入口：路由注册、异常处理、生命周期
-│   ├── deps.py                   # get_db / get_current_user / require_role
-│   ├── core/
-│   │   ├── config.py             # 配置,读 .env
-│   │   ├── security.py           # 密码哈希 + JWT 签发校验
-│   │   └── exceptions.py         # 业务异常 → HTTP 状态码
-│   ├── db/
-│   │   ├── base.py               # DeclarativeBase
-│   │   ├── engine.py             # Engine + 连接池
-│   │   └── session.py            # SessionLocal 与 get_db
-│   ├── models/                   # User / Order / Role（一对多 + 多对多）
-│   ├── schemas/                  # 请求响应模型 + 认证模型
-│   ├── services/                 # user_service / auth_service
-│   └── routers/
-│       ├── health.py             # /health、/health/db
-│       ├── auth.py               # /auth 注册 / 登录 / 当前用户
-│       ├── users.py              # /users 增删改查 + 角色
-│       └── wallet.py             # /transfer 转账
-├── tests/                        # pytest 用例（第七章）
-│   ├── conftest.py               # client / temp_user fixture
-│   └── test_auth.py              # 8 个认证用例
-├── migrations/                   # Alembic 迁移
-│   ├── env.py                    # 从 .env 取连接串,include_object 防误删
-│   └── versions/
-│       ├── 0001_initial_schema.py
-│       ├── 0002_add_roles.py     # 第五章：roles + user_roles
-│       └── 0003_add_password_hash.py   # 第七章：password_hash
+├── project/                      # 作品集：可运行的工程
+│   ├── app/                      # 应用代码
+│   │   ├── main.py               # 入口：路由注册、异常处理、生命周期
+│   │   ├── deps.py               # get_db / get_current_user / require_role
+│   │   ├── core/
+│   │   │   ├── config.py         # 配置,读 .env
+│   │   │   ├── security.py       # 密码哈希 + JWT 签发校验
+│   │   │   └── exceptions.py     # 业务异常 → HTTP 状态码
+│   │   ├── db/
+│   │   │   ├── base.py           # DeclarativeBase
+│   │   │   ├── engine.py         # Engine + 连接池
+│   │   │   └── session.py        # SessionLocal 与 get_db
+│   │   ├── models/               # User / Order / Role（一对多 + 多对多）
+│   │   ├── schemas/              # 请求响应模型 + 认证模型
+│   │   ├── services/             # user_service / auth_service
+│   │   └── routers/
+│   │       ├── health.py         # /health、/health/db
+│   │       ├── auth.py           # /auth 注册 / 登录 / 当前用户
+│   │       ├── users.py          # /users 增删改查 + 角色
+│   │       └── wallet.py         # /transfer 转账
+│   ├── tests/                    # pytest 用例
+│   │   ├── conftest.py           # client / temp_user fixture
+│   │   └── test_auth.py          # 8 个认证用例
+│   ├── migrations/               # Alembic 迁移
+│   │   ├── env.py                # 从 .env 取连接串,include_object 防误删
+│   │   └── versions/
+│   │       ├── 0001_initial_schema.py
+│   │       ├── 0002_add_roles.py # 第五章：roles + user_roles
+│   │       └── 0003_add_password_hash.py  # 第七章：password_hash
+│   ├── alembic.ini
+│   ├── requirements.txt
+│   └── .env.example
 ├── docs/                         # 架构说明 · 教程规划 · 文档排版模式
-├── alembic.ini
-├── .env.example
-└── requirements.txt
+└── README.md
 ```
+
+> `chapters/` 是学习资料(笔记 + 案例),`project/` 是能跑起来的工程。两者独立:
+> 章节案例会通过 `sys.path` 引用 `project/app`,但工程本身不依赖 `chapters/`。
 
 ## 快速开始
 
@@ -113,7 +118,7 @@ mysql-learning/
 ```bash
 python -m venv .venv
 source .venv/Scripts/activate          # Windows CMD/PowerShell 用 .venv\Scripts\activate
-pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+pip install -r project/requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
 > 国内网络直连 PyPI 经常卡住,加 `-i` 换清华镜像。
@@ -121,6 +126,7 @@ pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 ### 3. 配置数据库
 
 ```bash
+cd project
 cp .env.example .env
 # 编辑 .env,填入真实密码
 ```
@@ -130,6 +136,7 @@ cp .env.example .env
 ### 4. 启动应用
 
 ```bash
+cd project                      # ⚠️ 工程在 project/ 下，从这里启动
 uvicorn app.main:app --reload
 ```
 
@@ -176,32 +183,32 @@ uvicorn app.main:app --reload
 
 | 主题 | 笔记 | 代码 |
 | --- | --- | --- |
-| Engine / Base / Model / Session 四件套、`Mapped[T]` 与 `mapped_column`、脏检查机制、四个可执行案例 | [第三章](chapters/ch03/notes/SQLAlchemy%20ORM%20基础.md) | `chapters/ch03/code/01~04` + `app/models/user.py` |
-| 建表迁移单独成篇：`create_all` 为什么不适用、Alembic 基线、`include_object` 防误删 | [番外01 -- Alembic 数据库迁移](chapters/extras/notes/01-Alembic%20数据库迁移.md) | `migrations/` |
+| Engine / Base / Model / Session 四件套、`Mapped[T]` 与 `mapped_column`、脏检查机制、四个可执行案例 | [第三章](chapters/ch03/notes/SQLAlchemy%20ORM%20基础.md) | `chapters/ch03/code/01~04` + `project/app/models/user.py` |
+| 建表迁移单独成篇：`create_all` 为什么不适用、Alembic 基线、`include_object` 防误删 | [番外01 -- Alembic 数据库迁移](chapters/extras/notes/01-Alembic%20数据库迁移.md) | `project/migrations/` |
 
 ### 第四章 · SQLAlchemy ORM CRUD
 
 | 主题 | 笔记 | 代码 |
 | --- | --- | --- |
-| `add`/`commit`/`refresh` 的时序、条件查询与分页、改的两种写法、软删 vs 硬删、批量写入、service 分层 | [第四章](chapters/ch04/notes/SQLAlchemy%20ORM%20CRUD.md) | `chapters/ch04/code/01~04` + `app/services/user_service.py` |
+| `add`/`commit`/`refresh` 的时序、条件查询与分页、改的两种写法、软删 vs 硬删、批量写入、service 分层 | [第四章](chapters/ch04/notes/SQLAlchemy%20ORM%20CRUD.md) | `chapters/ch04/code/01~04` + `project/app/services/user_service.py` |
 
 ### 第五章 · SQLAlchemy 进阶
 
 | 主题 | 笔记 | 代码 |
 | --- | --- | --- |
-| 一对多 / 多对多关系映射、没有物理外键怎么写 `primaryjoin`、N+1 与 `selectinload`、并发丢更新、Alembic 加表 | [第五章](chapters/ch05/notes/SQLAlchemy%20进阶.md) | `chapters/ch05/code/01~04` + `app/models/order.py`、`role.py` |
+| 一对多 / 多对多关系映射、没有物理外键怎么写 `primaryjoin`、N+1 与 `selectinload`、并发丢更新、Alembic 加表 | [第五章](chapters/ch05/notes/SQLAlchemy%20进阶.md) | `chapters/ch05/code/01~04` + `project/app/models/order.py`、`role.py` |
 
 ### 第六章 · FastAPI + MySQL
 
 | 主题 | 笔记 | 代码 |
 | --- | --- | --- |
-| Pydantic 校验与响应裁剪、状态码语义、异常到 HTTP 的映射、分页接口、TestClient | [第六章](chapters/ch06/notes/FastAPI%20+%20MySQL.md) | `chapters/ch06/code/01~03` + `app/schemas/`、`app/routers/users.py` |
+| Pydantic 校验与响应裁剪、状态码语义、异常到 HTTP 的映射、分页接口、TestClient | [第六章](chapters/ch06/notes/FastAPI%20+%20MySQL.md) | `chapters/ch06/code/01~03` + `project/app/schemas/`、`project/app/routers/users.py` |
 
 ### 第七章 · 完整项目实战
 
 | 主题 | 笔记 | 代码 |
 | --- | --- | --- |
-| 密码哈希(argon2)、注册登录、JWT 签发校验、鉴权依赖、角色权限、转账事务、pytest 自动化测试 | [第七章](chapters/ch07/notes/完整项目实战.md) | `chapters/ch07/code/01~04` + `app/core/security.py`、`app/routers/auth.py`、`tests/` |
+| 密码哈希(argon2)、注册登录、JWT 签发校验、鉴权依赖、角色权限、转账事务、pytest 自动化测试 | [第七章](chapters/ch07/notes/完整项目实战.md) | `chapters/ch07/code/01~04` + `project/app/core/security.py`、`project/app/routers/auth.py`、`project/tests/` |
 
 完整学习路线见 [Python + MySQL 进阶实战教程](chapters/README.md)。
 
@@ -210,6 +217,7 @@ uvicorn app.main:app --reload
 表结构变更一律走 Alembic,不要用 `Base.metadata.create_all`。完整讲解见 [番外01](chapters/extras/notes/01-Alembic%20数据库迁移.md)。
 
 ```bash
+cd project                               # ⚠️ alembic.ini 在 project/ 下
 alembic current                          # 当前版本
 alembic check                            # 模型与库是否有差异
 alembic revision --autogenerate -m "描述" # 生成迁移
@@ -218,7 +226,7 @@ alembic downgrade -1                     # 回退一步
 ```
 
 > 注意：库里有第一章遗留的练习表（`students`/`books`/`orders`…）,它们没有对应的 ORM 模型。
-> `migrations/env.py` 里的 `include_object` 会把这些表排除在外,防止 autogenerate 生成 `DROP TABLE`。
+> `project/migrations/env.py` 里的 `include_object` 会把这些表排除在外,防止 autogenerate 生成 `DROP TABLE`。
 
 ## 练习代码怎么跑
 
@@ -291,7 +299,7 @@ export MYSQL_PASSWORD=你的密码
 - **密码一律走环境变量 / `.env`**,代码里不出现明文。
 - `.env`、`.venv/`、`__pycache__/` 均已加入 `.gitignore`。
 - 每章一个目录：`chapters/chNN/`,里面 `notes/` 只放 `.md`,`code/` 只放 `.py`。
-- 应用代码与学习代码分离：`app/` 是作品集,`chapters/` 是学习轨迹,两者不互相 import。
+- 应用代码与学习代码分离：`project/app/` 是作品集,`chapters/` 是学习轨迹,两者不互相 import。
 - 目录只在有内容时才建,不留空包。
 
 ## 常见问题

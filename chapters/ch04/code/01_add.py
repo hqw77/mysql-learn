@@ -15,7 +15,7 @@ import time
 from pathlib import Path
 
 # 让脚本能从仓库根目录 import app 包（文件在 chapters/ch04/code/,往上三级是仓库根）
-sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "project"))
 
 from sqlalchemy.exc import IntegrityError  # noqa: E402
 

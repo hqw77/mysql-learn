@@ -18,11 +18,11 @@
 | --- | --- | --- | --- | --- | --- |
 | 1 | MySQL 进阶基础 | SQL 怎么写对、写快 | 已有 | `chapters/ch01/code/` | — |
 | 2 | Python 数据库连接池 | 连接为什么贵、怎么复用 | 175 ✅ | `chapters/ch02/code/` | — |
-| 3 | SQLAlchemy ORM 基础 | ORM 是什么、第一条查询 | 400 | `chapters/ch03/code/` | `app/models/user.py` |
-| 4 | SQLAlchemy ORM CRUD | 增删改查怎么写才不土 | 350 | `chapters/ch04/code/` | `app/services/` |
-| 5 | SQLAlchemy 进阶 | 关系映射、事务、迁移 | 400 + 番外 | `chapters/ch05/code/` | `app/models/role.py` |
-| 6 | FastAPI + MySQL | 把 ORM 暴露成 API | 380 | `chapters/ch06/code/` | `app/schemas/`、`app/routers/` |
-| 7 | 完整项目实战 | 注册登录、权限、测试 | 450（或拆 2 篇） | — | 完整 `app/` + `tests/` |
+| 3 | SQLAlchemy ORM 基础 | ORM 是什么、第一条查询 | 400 | `chapters/ch03/code/` | `project/app/models/user.py` |
+| 4 | SQLAlchemy ORM CRUD | 增删改查怎么写才不土 | 350 | `chapters/ch04/code/` | `project/app/services/` |
+| 5 | SQLAlchemy 进阶 | 关系映射、事务、迁移 | 400 + 番外 | `chapters/ch05/code/` | `project/app/models/role.py` |
+| 6 | FastAPI + MySQL | 把 ORM 暴露成 API | 380 | `chapters/ch06/code/` | `project/app/schemas/`、`project/app/routers/` |
+| 7 | 完整项目实战 | 注册登录、权限、测试 | 450（或拆 2 篇） | — | 完整 `project/app/` + `tests/` |
 | 8 | 面试题与复盘 | 把知识串成能说出口的话 | 150 | — | — |
 
 > 篇幅预算是硬指标。第 3 章写了 529 行,读起来累——下次按预算收。
@@ -54,7 +54,7 @@
 ```plain
 ① 教程正文      chapters/chNN/notes/<章名>.md
 ② 练习代码      chapters/chNN/code/xxx.py        ← 能独立跑,不依赖 app
-③ 工程增量      app/...                     ← 从第 3 章开始的章才有
+③ 工程增量      project/app/...                     ← 从第 3 章开始的章才有
 ④ 索引更新      README.md 学习进度 + 笔记索引
 ⑤ 验收清单      正文末尾 4 条勾选项
 ```
@@ -108,14 +108,14 @@ ch1 SQL 基础
 
 | 章 | 新增文件 |
 | --- | --- |
-| 4 | `app/services/user_service.py`（业务逻辑与事务边界） |
-| 5 | `app/models/order.py`、`app/models/role.py`、`migrations/versions/0002_add_roles.py` |
-| 6 | `app/schemas/user.py`、`app/routers/users.py`,`main.py` 注册路由 |
-| 7 | `app/core/security.py`、`app/services/auth_service.py`、`app/routers/auth.py`、`app/routers/wallet.py`、`migrations/versions/0003_add_password_hash.py`、`tests/` |
+| 4 | `project/app/services/user_service.py`（业务逻辑与事务边界） |
+| 5 | `project/app/models/order.py`、`project/app/models/role.py`、`migrations/versions/0002_add_roles.py` |
+| 6 | `project/app/schemas/user.py`、`project/app/routers/users.py`,`main.py` 注册路由 |
+| 7 | `project/app/core/security.py`、`project/app/services/auth_service.py`、`project/app/routers/auth.py`、`project/app/routers/wallet.py`、`migrations/versions/0003_add_password_hash.py`、`tests/` |
 
 ## 7. 第三章的收口
 
-第三章目前的状态：正文完成、`chapters/ch03/code/mini_orm.py` 可跑、`app/models/user.py` 已映射真实表、`alembic check` 无差异。
+第三章目前的状态：正文完成、`chapters/ch03/code/mini_orm.py` 可跑、`project/app/models/user.py` 已映射真实表、`alembic check` 无差异。
 
 **验收清单（4 条,自测用）：**
 

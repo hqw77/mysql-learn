@@ -19,7 +19,7 @@ from pathlib import Path
 
 # 让脚本能从仓库根目录 import app 包
 # 文件在 chapters/ch03/code/ 下,往上退三级才是仓库根
-sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "project"))
 
 from sqlalchemy import select  # noqa: E402
 

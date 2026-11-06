@@ -24,16 +24,16 @@
 
 | 层 | 目录 | 职责 | 禁止事项 |
 | --- | --- | --- | --- |
-| 接口层 | `app/routers/` | 接收请求、返回响应、声明状态码 | 写 SQL、开事务 |
-| 业务层 | `app/services/` | 业务规则、事务边界、抛业务异常 | 感知 HTTP |
-| 模型层 | `app/models/` | 表结构映射 | 业务判断 |
+| 接口层 | `project/app/routers/` | 接收请求、返回响应、声明状态码 | 写 SQL、开事务 |
+| 业务层 | `project/app/services/` | 业务规则、事务边界、抛业务异常 | 感知 HTTP |
+| 模型层 | `project/app/models/` | 表结构映射 | 业务判断 |
 
 此外还有两个辅助层：
 
 | 目录 | 职责 |
 | --- | --- |
-| `app/schemas/` | 定义请求/响应的数据结构,并做格式校验 |
-| `app/core/` | 配置、异常定义等公共设施 |
+| `project/app/schemas/` | 定义请求/响应的数据结构,并做格式校验 |
+| `project/app/core/` | 配置、异常定义等公共设施 |
 
 > **通俗理解**：一家餐厅分三块——前厅负责点单上菜,后厨负责做菜,仓库负责存食材。前厅不需要知道菜怎么做,后厨也不需要管客人坐哪。这样店大了才不乱。
 
@@ -230,7 +230,7 @@ def delete_user(...): ...
 
 ### 6.6.1 业务异常定义
 
-业务异常定义在 `app/core/exceptions.py`,自身携带状态码：
+业务异常定义在 `project/app/core/exceptions.py`,自身携带状态码：
 
 ```python
 class AppError(Exception):

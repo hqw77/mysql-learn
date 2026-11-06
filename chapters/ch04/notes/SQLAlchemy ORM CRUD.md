@@ -325,7 +325,7 @@ db.commit()              # 一次事务
 
 ### 4.7.2 分层实现
 
-把数据库操作封装到 `app/services/user_service.py`：
+把数据库操作封装到 `project/app/services/user_service.py`：
 
 ```python
 def create_user(db: Session, username: str, phone: str) -> User:

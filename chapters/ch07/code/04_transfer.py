@@ -15,7 +15,7 @@ import warnings
 from decimal import Decimal
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "project"))
 
 warnings.filterwarnings("ignore")
 

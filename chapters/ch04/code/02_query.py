@@ -13,7 +13,7 @@
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "project"))
 
 from sqlalchemy import func, select  # noqa: E402
 

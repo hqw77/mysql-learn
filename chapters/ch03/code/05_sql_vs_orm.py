@@ -12,7 +12,7 @@ import sys
 from decimal import Decimal
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "project"))
 
 import pymysql  # noqa: E402
 from pymysql.cursors import DictCursor  # noqa: E402
