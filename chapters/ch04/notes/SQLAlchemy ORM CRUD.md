@@ -1,477 +1,411 @@
-# 第四章 · 增删改查（大白话版）
+# 第四章 · 增删改查
 
-> 这一章不背 API。只搞清楚六件事，每件事都用一个生活里的比方讲明白。
+## 4.1 学习目标
 
----
+本章在前一章的基础上，完整实现数据的增删改查，具体包括：
 
-## 这一章涉及哪些知识点
+1. 掌握新增数据时 `add()` 与 `commit()` 的分工，理解主键与默认值的产生时机
+2. 掌握按主键查询、条件查询、分页查询及总数统计
+3. 掌握修改数据的两种方式（修改对象属性、批量 update 语句）及其差异
+4. 理解软删除与硬删除的适用场景
+5. 理解批量提交与逐条提交的性能差异
+6. 理解为什么要引入 service 层，以及它如何组织事务边界
 
-1. **新增数据**：`add` 和 `commit` 到底是什么关系
-2. **查询数据**：查一条、查一批、分页怎么翻
-3. **修改数据**：改一个和改一批，写法不一样
-4. **删除数据**：软删除和硬删除，怎么选
-5. **批量插入**：为什么能快 10 倍
-6. **service 层**：为什么要把代码拆出去
+前置知识：第三章（Engine、Model、Session、脏检查）。
 
-每个知识点的讲法都一样：**一句话结论 → 打个比方 → 看代码 → 记住一个坑**。
-
----
-
-## 先看一张「比喻地图」
-
-这一章六个知识点，全是生活里的事。记不住 API 的时候，回想这些场景就行。
-
-| 你要干的事 | 生活里的比方 | 对应代码 |
-| --- | --- | --- |
-| 存一条新数据 | 加入购物车 → 付款下单 | `add` → `commit` |
-| 看付款结果 | 刷新订单页面 | `refresh` |
-| 查一条数据 | 找图书管理员要「1 号书」 | `get` |
-| 按条件查一批 | 让管理员筛「余额大于 100 的」 | `select ... where` |
-| 翻页 | 说「给我第 2 页，每页 20 行」 | `offset` / `limit` |
-| 改一条数据 | 改自己手里那张草稿 | 改属性 + `commit` |
-| 改一批数据 | 拿个章「啪啪啪」盖一百份 | `update()` 语句 |
-| 删除数据 | 进回收站 / Shift+Delete | 软删 / 硬删 |
-| 一次插很多条 | 一百个包裹一次寄走 | `add_all` + 一次 `commit` |
-| 代码放哪 | 前厅点单 / 后厨做菜 / 仓库存食材 | router / service / model |
-
-## 英文词小抄
-
-读代码时卡住的往往是一个英文词。遇到不认识的，回这张表看。
-
-| 英文 | 中文 | 一句人话 |
-| --- | --- | --- |
-| `add` | 添加 | 先把数据登记到内存里，还没进数据库 |
-| `commit` | 提交 | 把内存里的改动真正写进数据库 |
-| `rollback` | 回滚 | 反悔，撤销这次没提交的改动 |
-| `refresh` | 刷新 | 重新从数据库读一次，拿到数据库填的值 |
-| `select` | 查询 | 相当于写 `SELECT ...` |
-| `where` | 条件 | 相当于 SQL 里的 `WHERE` |
-| `offset` | 跳过 | 跳过前面多少条 |
-| `limit` | 限制 | 最多取多少条 |
-| `IntegrityError` | 完整性错误 | 数据不合规矩，最常见的是「用户名重复」 |
-| `UPDATE` / `DELETE` | 改 / 删 | SQL 的两种语句，看名字就懂 |
+> **本章的读法**：正文是教材写法。每个关键概念后面有一个「通俗理解」框，正文看不懂时先看那个框。
+> 本章四个案例都会自行清理测试数据，可以反复运行。
 
 ---
 
-## 知识点 1：新增数据 —— 先放购物车，再付款
+## 4.2 新增数据
 
-**一句话**：`add()` 是放进购物车，`commit()` 才是付款。
+### 4.2.1 add 与 commit 的分工
 
-**打个比方**
-
-你在网上买东西：
-
-| 你做的事 | 对应代码 | 发生了什么 |
-| --- | --- | --- |
-| 加入购物车 | `db.add(user)` | 东西在车里有记录，但还没下单，所以**没有订单号** |
-| 提交订单 | `db.commit()` | 网站真正生成订单：给你订单号，写上时间和金额 |
-| 刷新页面 | `db.refresh(user)` | 你才看到系统填的订单号和时间 |
-
-所以 `add` 之后 `user.id` 是 `None`，不是代码写错了——还没下单，哪来的订单号。
-
-**看时序：什么时候才真的碰数据库**
-
-```plain
-   db.add(user)              db.commit()                db.refresh(user)
-        │                         │                            │
-        ▼                         ▼                            ▼
-   放进购物车                  提交订单                      刷新页面
-  （只存在内存里）          INSERT 真正执行              重新从库里读一次
-        │                         │                            │
-        ▼                         ▼                            ▼
-   user.id = None            user.id = 1               created_at 有值了
-
-   全程不发 SQL                第一条 SQL 在这里           第二条 SQL 在这里
-```
-
-关键就是中间那一列：**只有 `commit()` 会发 SQL**。前面 `add` 只是登记，后面 `refresh` 只是回读。
-
-**看代码**
+新增一条数据分为两步：
 
 ```python
 user = User(username="小明", phone="13800000000")
-
-db.add(user)          # 放进购物车
-print(user.id)        # None  ← 还没下单
-
-db.commit()           # 付款，这时候才真正 INSERT
-print(user.id)        # 1     ← 订单号出来了
-
-db.refresh(user)      # 刷新，才能看到数据库填的 created_at
+db.add(user)      # 第一步：登记到 Session
+db.commit()       # 第二步：真正写进数据库
 ```
 
-**记住一个坑**
+| 步骤 | 方法 | 作用 | 是否发 SQL |
+| --- | --- | --- | --- |
+| 1 | `add()` | 把对象加入 Session 的 `new` 集合 | 否 |
+| 2 | `commit()` | 执行 INSERT 并提交事务 | 是 |
 
-`commit()` 报错之后（比如用户名重复），**一定要 `rollback()`**。
+> **通俗理解**：`add()` 像把商品加入购物车——车里有记录了，但还没下单，所以没有订单号。`commit()` 才是点"提交订单"，这时候网站才真正生成订单，给你订单号（自增主键），并填上下单时间。
 
-不 rollback 的话，这个"购物车"就卡在付款失败的页面上了，接下来所有操作都会跟着报错。这个坑新手最容易踩。
+### 4.2.2 主键与默认值的产生
 
-跑一遍：`python chapters/ch04/code/01_add.py`
+`add()` 之后主键仍为 `None`，`commit()` 之后才被数据库回填；数据库中由默认值生成的字段，需要调用 `refresh()` 才能读到。
+
+```python
+user = User(username="小明", phone="138...")
+db.add(user)
+print(user.id)            # None
+
+db.commit()
+print(user.id)            # 1
+
+db.refresh(user)          # 回读一次
+print(user.created_at)    # 数据库填的时间
+```
+
+> **通俗理解**：主键是数据库分配的，你不提交，数据库根本不知道你要插入，自然不会给你编号。`created_at` 同理——要等数据库写完，再读回来才看得到。
+
+### 4.2.3 唯一键冲突的处理
+
+当插入的数据违反唯一约束（如用户名重复）时，错误在 `commit()` 阶段抛出：
+
+```python
+try:
+    db.commit()
+except IntegrityError:
+    db.rollback()                     # 必须回滚
+    raise ConflictError("用户名已存在")
+```
+
+**注意**：捕获异常后必须 `rollback()`。不回滚的 Session 会停留在坏事务中，后续所有操作都会失败。
+
+### 4.2.4 示例与运行结果
+
+示例文件：`chapters/ch04/code/01_add.py`
+
+```plain
+--- ① 新建一个对象，add 之后还没提交 ---
+    user.id = None   ← 还没 INSERT，主键是空的
+    session.new 里有它吗: 1 个  ← add 之后才进 new 集合
+
+--- ② commit 之后 ---
+    user.id = 211
+
+--- ③ refresh 才能看到数据库填的默认值 ---
+    created_at = 2026-11-04 18:58:13   ← server_default 填的
+    balance    = 0   ← DEFAULT 0.00 生效
+
+--- ④ 再插一个同名用户会怎样 ---
+    捕获 IntegrityError: (1062, "Duplicate entry 'u9893646' for key 'users.username'" ...
+    → 业务层要把它翻译成 409
+```
 
 ---
 
-## 知识点 2：查询 —— 让数据库帮你翻页
+## 4.3 查询数据
 
-**一句话**：查一条用 `get`，查一批用 `select`，分页别自己切。
+### 4.3.1 按主键查询
 
-**打个比方**
+```python
+user = db.get(User, 1)      # 查不到返回 None
+```
 
-- `db.get(User, 1)` → 你告诉图书管理员"我要 1 号书"，他直接去那个位置拿。**按键取**。
-- `select(User).where(...)` → 你给管理员一个条件"所有余额大于 100 的"，他筛一遍给你。**按条件筛**。
-- 分页 → 一本书一千页，你不会一次全搬到桌上，你说"给我第 2 页，每页 20 行"。**让管理员翻**。
+### 4.3.2 条件查询
 
-**三种查法，走的路不一样**
+```python
+from sqlalchemy import select
+
+users = db.scalars(
+    select(User).where(User.balance > 200).order_by(User.balance.desc())
+).all()
+```
+
+### 4.3.3 分页查询
+
+分页通过 `offset` 与 `limit` 实现，由数据库完成，不应把全部数据取回后再切片：
+
+```python
+page, size = 2, 20
+stmt = (
+    select(User)
+    .order_by(User.id)
+    .offset((page - 1) * size)      # 跳过前面的记录
+    .limit(size)                     # 最多取多少条
+)
+rows = db.scalars(stmt).all()
+```
+
+> **通俗理解**：一本书一千页，你不会一次把全部搬到桌上，你说"给我第 2 页，每页 20 行"。`offset` 是跳过多少条，`limit` 是取多少条，都交给数据库做。
+
+### 4.3.4 总数统计
+
+分页接口还需要返回总条数，必须单独查询：
+
+```python
+total = db.scalar(select(func.count()).select_from(User))
+```
+
+**注意**：不能用 `len(rows)` 代替总数。`len(rows)` 最多等于 `size`，只是当前页的条数。
+
+> **通俗理解**：`len(rows)` 数的是"这一页有几条"，前端分页器要的是"一共多少条"。两者用途不同，不能互相顶替。
+
+### 4.3.5 示例与运行结果
+
+示例文件：`chapters/ch04/code/02_query.py`
 
 ```plain
-① 按 id 查          db.get(User, 1)                    → 1 条
-                        SELECT ... WHERE id = 1
+--- ① 总共有多少条 ---
+    COUNT(*) = 3
 
-② 按条件查          select(User).where(balance > 100)  → 若干条
-                        SELECT ... WHERE balance > 100
+--- ② 条件查询：余额 > 200，按余额倒序 ---
+    <User id=1 username='张三' balance=888.00>
+    <User id=2 username='李四' balance=400.00>
 
-③ 分页              select(User).offset(20).limit(20)  → 最多 20 条
-                        SELECT ... LIMIT 20 OFFSET 20
-                                 └─ 取 20 条  └─ 跳过前 20 条
+--- ③ 分页：第 1 页，每页 2 条 ---
+    SELECT ... LIMIT 2 OFFSET 0
+    <User id=1 username='张三' balance=888.00>
+    <User id=2 username='李四' balance=400.00>
+
+--- ④ 第 2 页 ---
+    <User id=3 username='王五' balance=100.00>
+
+--- ⑥ count 和 len 的区别 ---
+    总数（COUNT）      : 3
+    当页条数（len）    : 2   ← 只是这一页，不是总数
 ```
-
-**看代码**
-
-```python
-# 1. 按 id 查一条（查不到返回 None，不报错）
-user = db.get(User, 1)
-
-# 2. 按条件查一批
-stmt = select(User).where(User.balance > 100).order_by(User.balance.desc())
-users = db.scalars(stmt).all()
-
-# 3. 分页：跳过前 20 条，取接下来 20 条（第 2 页）
-stmt = select(User).order_by(User.id).offset(20).limit(20)
-page2 = db.scalars(stmt).all()
-```
-
-**记住一个坑**
-
-**总数要单独数**，不能拿 `len(users)`。
-
-因为 `len` 数的只是"这一页有几条"，最多等于每页条数。前端的分页器要的是"一共多少条"，那个得让数据库 `COUNT(*)` 数。
-
-```python
-total = db.scalar(select(func.count()).select_from(User))   # 一共多少条
-page_rows = db.scalars(stmt).all()                          # 这一页多少条
-```
-
-跑一遍：`python chapters/ch04/code/02_query.py`
 
 ---
 
-## 知识点 3：修改 —— 改一个字 vs 盖一个章
+## 4.4 修改数据
 
-**一句话**：改一个对象就改它的属性，改一批就用 `update()` 语句。
+### 4.4.1 修改单个对象
 
-**打个比方**
-
-- **改一个**：你在自己的草稿上改一个字。自然、直接。
-- **改一批**：一百份文件都要盖上"已作废"的红章。你不会一份一份盖，你拿个章"啪啪啪"盖过去。
-
-前者是 ORM 帮你盯着一个对象改；后者是发一条 SQL，让数据库一次改一堆。
-
-**两种改法，SQL 不一样**
-
-```plain
-改一个：  user.balance = 100          commit
-              │                          │
-              ▼                          ▼
-        只改内存里的这个对象        UPDATE users SET balance = 100
-                                    WHERE id = 1
-                                    └─ 只影响 1 行
-
-改一批：  db.execute(update(User).where(User.status == 0)...)
-              │
-              ▼
-        一条 SQL 直接发给数据库    UPDATE users SET status = 1
-                                    WHERE status = 0
-                                    └─ 影响 N 行，ORM 不参与计算
-```
-
-**看代码**
+通过修改属性完成，依赖第三章讲过的脏检查机制：
 
 ```python
-# 改一个：改属性 + commit
 user = db.get(User, 1)
 user.balance = Decimal("100.00")
-db.commit()                      # 生成 UPDATE ... WHERE id = 1
+db.commit()        # 生成 UPDATE ... WHERE id = 1
+```
 
-# 改一批：一条 SQL 改 N 行
-db.execute(
+生成的 SQL 只包含被修改的列。
+
+### 4.4.2 批量修改
+
+需要一次修改多行时，使用 `update()` 语句，一条 SQL 改一批：
+
+```python
+from sqlalchemy import update
+
+result = db.execute(
     update(User).where(User.status == 0).values(status=1)
 )
-db.commit()                      # 生成 UPDATE ... WHERE status = 0
+db.commit()
+print(result.rowcount)      # 影响的行数
 ```
 
-**记住一个坑**
+### 4.4.3 两种方式对比
 
-改一个对象时，SQLAlchemy 生成的是 `SET balance = 100`——写的是**你算好的那个值**。
+| | 修改对象属性 | `update()` 语句 |
+| --- | --- | --- |
+| 适用场景 | 改已知的一两条 | 按条件批量改 |
+| 生成 SQL | `UPDATE ... WHERE id = ?` | `UPDATE ... WHERE 条件` |
+| 是否经过 ORM 对象 | 是 | 否 |
+| 能否拿到影响行数 | 否 | 是（`rowcount`） |
 
-这意味着：两个人同时读到余额 888，各自减 300，后提交的那个会把自己算的 588 写进去，前一个人的修改就没了。这叫**丢更新**。
+> **通俗理解**：改一个对象像改自己的草稿，改哪儿算哪儿；批量改像拿个章"啪啪啪"盖一百份，一条语句解决。前者要先把数据读出来，后者直接操作数据库。
 
-所以扣钱、扣库存这种操作，别用"改属性"，要让数据库自己算（第五章细讲）。
+**注意**：修改对象属性时，生成的是固定值 UPDATE（`SET balance = 588`），并发场景下存在丢更新风险，详见第五章 5.6 节。
 
-跑一遍：`python chapters/ch04/code/03_update_delete.py`
+### 4.4.4 示例与运行结果
 
----
-
-## 知识点 4：删除 —— 回收站 vs 彻底删除
-
-**一句话**：用户、订单这种业务数据用软删除；日志、临时数据用硬删除。
-
-**打个比方**
-
-- **软删除**：文件删了进回收站。文件还在硬盘上，只是打了"已删除"的标记，随时能还原。
-- **硬删除**：Shift + Delete。彻底没了，找不回来。
-
-**数据到底还在不在**
+示例文件：`chapters/ch04/code/03_update_delete.py`
 
 ```plain
-删除之前     id=3   张三   is_deleted=0      ← 列表查得到
+--- ② 改单个对象：只改属性，commit 时发 UPDATE ---
+    SQL: UPDATE users SET balance=%(balance)s WHERE users.id = %(users_id)s
+    → 只改了 balance 一列
 
-软删之后     id=3   张三   is_deleted=1      ← 行还在！只是列表查不到了
-                                              （因为查询加了 WHERE is_deleted = 0）
-
-硬删之后     （这一行没了）                   ← 谁都查不到，也恢复不了
+--- ③ 批量改：一条 SQL 改一批 ---
+    SQL: UPDATE users SET balance=%(balance)s WHERE users.username LIKE %(username_1)s
+    影响行数: 3
 ```
 
-看最后一行和中间那行的区别：**软删改的是标记，不是数据**。所以想恢复，把 `is_deleted` 改回 0 就行。
+---
 
-**看代码**
+## 4.5 删除数据
+
+### 4.5.1 软删除
+
+不真正删除记录，只修改标记字段：
 
 ```python
-# 软删除：给表加一个 is_deleted 字段，置 1
 user.is_deleted = 1
-db.commit()              # 行还在，只是标记变了
+db.commit()          # 行还在，只是标记变了
+```
 
-# 硬删除：真的 DELETE
+查询时需要过滤：
+
+```python
+select(User).where(User.is_deleted == 0)
+```
+
+### 4.5.2 硬删除
+
+真正删除记录：
+
+```python
 db.delete(user)
-db.commit()              # 行没了
+db.commit()          # 行没了，不可恢复
 ```
 
-**记住一个坑**
+### 4.5.3 选型建议
 
-软删除的坑**不在删除，在查询**。
-
-一旦加了 `is_deleted`，你所有列表查询都得记得带上 `WHERE is_deleted = 0`。漏一个地方，删掉的用户就又冒出来了，而且很难发现。
-
-所以这个过滤条件要写在 service 里，**只写一次**，别让每个查询各自写。
-
-```python
-# services/user_service.py
-stmt = select(User).where(User.is_deleted == 0)   # 条件集中在这里
-```
-
----
-
-## 知识点 5：批量插入 —— 跑一百趟 vs 一次寄走
-
-**一句话**：一百条数据，一次 `commit` 比一百次 `commit` 快一个数量级。
-
-**打个比方**
-
-你要寄 100 个包裹：
-
-- **笨办法**：一个个跑邮局，填单、排队、交钱。跑 100 趟。
-- **聪明办法**：全部打包，一次拉过去，一次办完。
-
-每次 `commit()` 就是跑一趟邮局——一次网络往返、一次事务提交。跑 100 趟当然慢。
-
-**看代码**
-
-```python
-# 慢：100 趟邮局
-for i in range(100):
-    db.add(User(username=f"u{i}"))
-    db.commit()                        # 每次都在跑一趟
-
-# 快：1 趟
-db.add_all([User(username=f"u{i}") for i in range(100)])
-db.commit()                            # 只跑一趟
-```
-
-**实测**：100 条数据，慢的 0.185 秒，快的 0.014 秒，**差 12.9 倍**。
-
-跑一遍：`python chapters/ch04/code/04_batch_and_service.py`
-
----
-
-## 知识点 6：service 层 —— 前厅和后厨
-
-**一句话**：接口层只管"接单上菜"，真正的业务逻辑放 service，别混在一起。
-
-**打个比方**
-
-餐厅分三块：
-
-| 角色 | 对应代码 | 干什么 |
+| | 软删除 | 硬删除 |
 | --- | --- | --- |
-| 前厅服务员 | `routers/` | 迎客、点单、上菜。不需要知道菜怎么做 |
-| 后厨 | `services/` | 真正做菜，管火候、管食材 |
-| 仓库 | `models/` | 食材本身 |
+| 数据是否保留 | 保留 | 删除 |
+| 能否恢复 | 能 | 不能 |
+| 关联数据是否受影响 | 不受影响 | 可能断链 |
+| 查询是否需额外条件 | 需要 | 不需要 |
+| 适用场景 | 用户、订单、文章 | 日志、临时数据、合规删除 |
 
-如果让服务员自己进厨房炒菜，两三个客人还行，店一大就乱套了。
+> **通俗理解**：软删除像把文件放进回收站，文件还在硬盘上，只是打了标记；硬删除像 Shift + Delete，彻底没了。业务数据几乎都用软删除。
 
-**看代码**
+**注意**：软删除的难点不在删除，而在查询。一旦引入 `is_deleted`，所有列表查询都必须带上过滤条件，漏一处就会把已删除数据返回。工程上应把该条件统一写在 service 层。
 
-不用 service（接口里什么都干）：
+### 4.5.4 示例与运行结果
 
-```python
-@router.post("/users")
-def create_user(payload):
-    user = User(username=payload.username, phone=payload.phone)
-    db.add(user)
-    try:
-        db.commit()
-    except IntegrityError:
-        db.rollback()
-        raise HTTPException(409, "用户名重复")     # 接口层直接处理数据库异常
-    return user
+沿用 `chapters/ch04/code/03_update_delete.py`：
+
+```plain
+--- ④ 软删除：行还在，只是标记 ---
+    is_deleted = 1，行仍然存在：<User id=7 username='up89884_1' balance=0>
+    业务查询要自己过滤：WHERE is_deleted = 0
+
+--- ⑤ 硬删除：真的没了 ---
+    再查: None   ← None
 ```
 
-用 service：
+---
+
+## 4.6 批量操作性能
+
+### 4.6.1 逐条提交
 
 ```python
-# routers/users.py —— 前厅只管接单
-@router.post("/users")
-def create_user(payload, db=Depends(get_db)):
-    return user_service.create_user(db, payload.username, payload.phone)
+for i in range(100):
+    db.add(User(username=f"u{i}", ...))
+    db.commit()          # 每条一次事务、一次网络往返
+```
 
-# services/user_service.py —— 后厨负责做菜
-def create_user(db, username, phone):
+### 4.6.2 批量提交
+
+```python
+db.add_all([User(username=f"u{i}", ...) for i in range(100)])
+db.commit()              # 一次事务
+```
+
+### 4.6.3 实测对比
+
+示例文件：`chapters/ch04/code/04_batch_and_service.py`
+
+```plain
+--- ① 逐条 commit：100 条 ---
+--- ② add_all + 一次 commit：100 条 ---
+    逐条 commit :  0.185s
+    批量 commit :  0.014s
+    快 12.9 倍
+```
+
+> **通俗理解**：寄 100 个包裹，笨办法是一个个跑邮局，聪明办法是全部打包一次寄走。每次 `commit()` 就是跑一趟邮局，网络往返和事务提交的开销都省不掉。
+
+---
+
+## 4.7 业务分层
+
+### 4.7.1 为什么需要 service 层
+
+如果每个接口自己写数据库操作，会出现三个问题：
+
+| 问题 | 后果 |
+| --- | --- |
+| 逻辑重复 | 新增用户时的"冲突检查 + 回滚"要在多处重复 |
+| 职责混乱 | 路由层既处理 HTTP 又处理事务，难以复用 |
+| 难以测试 | 不启动 Web 服务就无法测试业务逻辑 |
+
+### 4.7.2 分层实现
+
+把数据库操作封装到 `app/services/user_service.py`：
+
+```python
+def create_user(db: Session, username: str, phone: str) -> User:
     user = User(username=username, phone=phone)
     db.add(user)
     try:
         db.commit()
     except IntegrityError:
         db.rollback()
-        raise ConflictError("用户名已存在")       # 抛业务异常，不是 HTTP 异常
+        raise ConflictError(f"用户名或手机号已存在：{username}")
+    db.refresh(user)
     return user
 ```
 
-**好处**：这段"失败要回滚、重复要报 409"的逻辑只写一次。以后写命令行工具、定时任务，也能直接调这个函数，不用管 HTTP。
-
-> 这也是为什么第六章加接口时，`user_service` 一行都没改——它压根不知道 HTTP 的存在。
-
----
-
-## 面试常问的 3 个问题
-
-每个问题给一个「答题模板」：**一句话 → 展开两三步 → 补一句加分项**。面试时照着这个骨架说，比背定义管用。
-
-### 1. `add()` 和 `commit()` 有什么区别？
-
-> **一句话**：`add` 只是把对象交给 Session 管着，`commit` 才真正写进数据库。
->
-> **展开**：
-> 1. `add` 之后对象进入 Session 的 `new` 集合，此时没有任何 SQL 发出；
-> 2. `commit` 时会 flush：对新增的发 INSERT，对修改的发 UPDATE，对删除的发 DELETE；
-> 3. 提交成功后主键才回填到对象上，数据库默认值要 `refresh` 才看得到。
->
-> **加分项**：所以 `add` 了不 `commit` 就退出，数据会丢；`commit` 失败不 `rollback`，Session 会卡在坏事务里。
-
-### 2. 软删除和硬删除怎么选？
-
-> **一句话**：能恢复、要审计、有关联数据的，用软删。
->
-> **展开**：
-> - 软删：加 `is_deleted` 字段做标记，行还在，随时能恢复。用户、订单、文章这类业务数据基本都用它；
-> - 硬删：`DELETE` 真删，日志、临时数据、合规要求"必须删除"的才用。
->
-> **加分项**：软删的代价不在删除，在查询——每条查询都得带 `is_deleted = 0`，漏一处就会把已删数据放出来，所以这个条件要统一写在 service 里。
-
-### 3. 一次插入一万条，怎么做最快？
-
-> **一句话**：一次 commit、一次网络往返。
->
-> **展开**：
-> - 最差：循环 `add` + `commit`，一万次事务；
-> - 好一点：`add_all` + 一次 `commit`，ORM 会合并成批量 INSERT；
-> - 更好：`db.execute(insert(User), [dict1, dict2, ...])` 走 executemany，省掉对象实例化；
-> - 极致：`LOAD DATA INFILE`，适合百万级导入。
->
-> **加分项**：我们实测过 100 条，逐条 commit 0.185 秒，批量 0.014 秒，差 12.9 倍，而且数据量越大差距越大。
-
----
-
-## 这一章只要记住三句话
-
-1. **`add` 是放购物车，`commit` 才是付款**
-2. **软删除是打标记，查询必须自己过滤**
-3. **批量写一次 commit，业务逻辑放 service**
-
----
-
-## 练习顺序
-
-```bash
-cd D:/github_repository/mysql-learning
-export MYSQL_PASSWORD=你的密码
-
-python chapters/ch04/code/01_add.py                 # 新增 + 重复报错
-python chapters/ch04/code/02_query.py               # 查询 + 分页
-python chapters/ch04/code/03_update_delete.py       # 改 + 删
-python chapters/ch04/code/04_batch_and_service.py   # 批量 + service
-```
-
-四个脚本都会自己清理测试数据，跑完库里还是原来的 3 个用户，可以放心反复跑。
-
----
-
-## 学完可以自问三句
-
-- `add` 之后 `user.id` 为什么是 `None`？
-- 分页时为什么不能拿 `len(rows)` 当总数？
-- 软删除之后，哪个地方最容易漏掉过滤条件？
-
-三句都能答上来，这一章就过关了。
-
----
-
-## 速查卡（忘了就翻这一页）
-
-**增删改查骨架**
+路由层只负责调用：
 
 ```python
-# 增
-u = User(username="小明", phone="13800000000")
-db.add(u); db.commit(); db.refresh(u)
-
-# 查
-db.get(User, 1)                                        # 按 id 查一条
-db.scalars(select(User).where(User.balance > 100)).all()   # 按条件查一批
-select(User).order_by(User.id).offset(20).limit(20)    # 分页
-db.scalar(select(func.count()).select_from(User))      # 总数
-
-# 改
-u.balance = 100; db.commit()                           # 改一个
-db.execute(update(User).where(...).values(balance=0))  # 改一批
-
-# 删
-u.is_deleted = 1                                       # 软删
-db.delete(u)                                           # 硬删
+@router.post("", response_model=UserOut, status_code=201)
+def create_user(payload: UserCreate, db: Session = Depends(get_db)):
+    return user_service.create_user(db, payload.username, payload.phone)
 ```
 
-**四个最容易忘的点**
+分层后的职责：
 
-| 情况 | 记住这句 |
-| --- | --- |
-| `commit()` 报错之后 | 一定要 `db.rollback()` |
-| 想看数据库填的默认值（`created_at` 等） | 先 `db.refresh(u)` |
-| 分页要显示总数 | 用 `COUNT(*)`，不是 `len()` |
-| 要插很多条 | `add_all` + 一次 `commit` |
+| 层 | 负责 | 不负责 |
+| --- | --- | --- |
+| `routers/` | 接收请求、返回响应、状态码 | 写 SQL、开事务 |
+| `services/` | 业务规则、事务边界、异常翻译 | 处理 HTTP |
+| `models/` | 表结构映射 | 业务判断 |
 
-**三句话**
+> **通俗理解**：餐厅里前厅只管点单上菜，后厨只管做菜。如果让服务员自己炒菜，两三个客人还行，店一大就乱套了。分层之后，第六章加接口时 `user_service` 一行都不用改。
 
-1. `add` 是放购物车，`commit` 才是付款
-2. 软删除是打标记，查询必须自己过滤
-3. 批量写一次 commit，业务逻辑放 service
+### 4.7.3 示例与运行结果
+
+沿用 `chapters/ch04/code/04_batch_and_service.py`：
+
+```plain
+--- ③ 换成 service 层，调用方只写一行 ---
+    创建: <User id=209 username='bt89888_svc' balance=50.00>
+    改余额: 200.00 （50 + 150）
+    分页: 共 204 条，本页 3 条
+
+--- ④ service 把数据库异常翻译成了业务异常 ---
+    ConflictError: 用户名或手机号已存在：bt89888_svc  → 路由层会转成 409
+    NotFoundError: 用户 99999999 不存在  → 路由层会转成 404
+```
 
 ---
 
-<small>相关：[第三章 -- SQLAlchemy ORM 基础](../../ch03/notes/SQLAlchemy%20ORM%20基础.md) · [第五章 -- SQLAlchemy 进阶](../../ch05/notes/SQLAlchemy%20进阶.md)</small>
+## 4.8 常见错误
+
+| 错误信息 | 原因 | 解决方法 |
+| --- | --- | --- |
+| `ModuleNotFoundError: No module named 'app'` | 未在仓库根目录执行 | `cd` 到仓库根目录再运行 |
+| `IntegrityError: Duplicate entry` | 唯一键冲突 | 捕获后 `rollback()` 并转为业务异常 |
+| `PendingRollbackError` | 上次异常未回滚 | 在 `except` 中补 `db.rollback()` |
+| 分页页数越多越慢 | `OFFSET` 过大 | 改用游标分页（`WHERE id > last_id`） |
+| 接口返回了已删除的数据 | 软删除后未加过滤条件 | 查询统一加 `is_deleted = 0` |
+| 批量插入很慢 | 循环内 `commit()` | 改用 `add_all` + 一次 `commit` |
+
+---
+
+## 4.9 本章小结
+
+1. `add()` 只登记到 Session，`commit()` 才执行 INSERT；主键与默认值在提交后才可见（默认值需 `refresh`）。
+2. 分页由数据库完成（`offset` + `limit`），总数必须单独 `COUNT`，不能用 `len()` 代替。
+3. 修改单个对象依赖脏检查，只更新变化的列；批量修改用 `update()` 语句，可通过 `rowcount` 判断影响行数。
+4. 业务数据用软删除，需在查询侧统一过滤；硬删除不可恢复。
+5. 批量写入应合并为一次提交，实测 100 条数据相差 12.9 倍。
+6. 业务逻辑应放进 service 层，统一管理事务边界与异常翻译。
+
+---
+
+## 4.10 练习
+
+1. 为 `users` 表实现"按用户名模糊查询 + 分页"的 service 方法，要求同时返回总条数。
+2. 写一个函数 `transfer(db, from_id, to_id, amount)`，完成两个用户之间的转账，要求任一步失败时整体回滚。
+3. 运行案例 4，把 `ROWS` 改为 500，观察倍数是否变化，并解释原因。
+4. 思考：如果 `username` 是唯一索引，软删除后该用户名能否被再次注册？应如何设计？
+
+---
+
+<small>相关：[第三章 -- SQLAlchemy ORM 基础](../../ch03/notes/SQLAlchemy%20ORM%20基础.md) · [第五章 -- SQLAlchemy 关系映射](../../ch05/notes/SQLAlchemy%20进阶.md)</small>

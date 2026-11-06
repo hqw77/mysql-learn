@@ -1,135 +1,127 @@
-# 第六章 · 把数据库变成接口（大白话版）
+# 第六章 · FastAPI 接口开发
 
-> 这一章讲的是：**别人怎么通过网络用上你写的数据库操作。**
+## 6.1 学习目标
 
----
+本章把前几章的数据访问能力封装为 HTTP 接口，具体包括：
 
-## 这一章涉及哪些知识点
+1. 理解接口开发中的三层结构及各自职责
+2. 掌握用 Pydantic 定义请求模型与响应模型，并实现参数校验
+3. 掌握用 APIRouter 定义接口并注册到应用
+4. 理解常用 HTTP 状态码的语义，并能在接口中正确声明
+5. 掌握业务异常到 HTTP 状态码的映射方式
+6. 能够使用 TestClient 对接口进行自测
 
-1. **三层分工**：前厅、后厨、仓库各管什么
-2. **schema**：机场安检，先检查再放行
-3. **路由**：分诊台，哪个窗口办哪件事
-4. **状态码**：办事回执，201 / 404 / 409 / 422 各是什么意思
-5. **异常变状态码**：后厨出问题，前台怎么跟客人说
-6. **自己试菜**：不起服务器也能测接口
+前置知识：第四章（service 层）、第五章（关系映射）。
 
-每个知识点都是：**一句话结论 → 打个比方 → 看代码 → 记住一个坑**。
-
----
-
-## 先看一张「比喻地图」
-
-| 你要干的事 | 生活里的比方 | 对应文件 |
-| --- | --- | --- |
-| 收请求、返响应 | 前厅服务员接单上菜 | `routers/` |
-| 检查请求格式 | 机场安检 | `schemas/` |
-| 真正干活 | 后厨做菜 | `services/` |
-| 数据本身 | 仓库存食材 | `models/` |
-| 告诉客人成功还是失败 | 递一张回执单 | 状态码 |
-| 后厨搞砸了怎么解释 | 服务员话术 | 异常处理器 |
-| 自己当客人试菜 | 内部试吃 | `TestClient` |
-
-## 英文词小抄
-
-| 英文 | 中文 | 一句人话 |
-| --- | --- | --- |
-| `schema` | 数据模型 | 定义接口收什么、返什么，也负责检查格式 |
-| `router` | 路由 | 一组接口的集合，比如所有 `/users` 开头的 |
-| `response_model` | 响应模型 | 声明返回的数据长什么样，多余的字段会被丢掉 |
-| `Depends` | 依赖注入 | 让 FastAPI 自动把数据库会话递给你 |
-| `Query` | 查询参数 | URL 里 `?page=1&size=10` 这些 |
-| `status_code` | 状态码 | 200 成功、201 创建、404 找不到…… |
-| `HTTPException` | HTTP 异常 | FastAPI 自带的错误，返回状态码 + 说明 |
-| `TestClient` | 测试客户端 | 不用起服务器，直接把请求打进应用 |
-| `422` | 校验失败 | 你传的数据格式不对，还没进业务逻辑就被挡了 |
-| `409` | 冲突 | 数据撞车了，最常见是用户名重复 |
+> **本章的读法**：正文是教材写法。每个关键概念后面有一个「通俗理解」框。
+> 本章三个案例都不需要启动服务器即可运行。
 
 ---
 
-## 知识点 1：三层分工 —— 前厅、后厨、仓库
+## 6.2 分层结构
 
-**一句话**：接口层只管收单返单，业务逻辑放 service，数据定义放 model。
+### 6.2.1 三层职责
 
-**打个比方**
-
-一家餐厅：
-
-| 角色 | 对应文件 | 干什么 | 不该干什么 |
+| 层 | 目录 | 职责 | 禁止事项 |
 | --- | --- | --- | --- |
-| 前厅服务员 | `routers/` | 迎客、点单、上菜 | 不该进厨房炒菜 |
-| 后厨 | `services/` | 做菜，管火候和食材 | 不该管客人坐哪 |
-| 仓库 | `models/` | 存食材（数据和结构） | 不该决定怎么做菜 |
+| 接口层 | `app/routers/` | 接收请求、返回响应、声明状态码 | 写 SQL、开事务 |
+| 业务层 | `app/services/` | 业务规则、事务边界、抛业务异常 | 感知 HTTP |
+| 模型层 | `app/models/` | 表结构映射 | 业务判断 |
 
-如果让服务员自己炒菜，两三个客人还行，店一大就乱。
+此外还有两个辅助层：
 
-**看请求怎么走**
+| 目录 | 职责 |
+| --- | --- |
+| `app/schemas/` | 定义请求/响应的数据结构，并做格式校验 |
+| `app/core/` | 配置、异常定义等公共设施 |
+
+> **通俗理解**：一家餐厅分三块——前厅负责点单上菜，后厨负责做菜，仓库负责存食材。前厅不需要知道菜怎么做，后厨也不需要管客人坐哪。这样店大了才不乱。
+
+### 6.2.2 请求处理流程
 
 ```plain
    客户端（浏览器 / curl / 前端）
-        │  POST /users  {"username": "小明", ...}
+        │  POST /users   {"username": "小明", "phone": "138..."}
         ▼
    ┌─────────────┐
-   │  routers/   │ 前厅：收单，检查有没有这个人该办的窗口
+   │  schemas/   │  ① 校验格式，不合格直接返回 422
    └──────┬──────┘
           ▼
    ┌─────────────┐
-   │  services/  │ 后厨：真正干活，管事务、管报错
+   │  routers/   │  ② 接收请求，调用 service
    └──────┬──────┘
           ▼
    ┌─────────────┐
-   │  models/    │ 仓库：数据长什么样
+   │  services/  │  ③ 执行业务，管理事务，抛业务异常
+   └──────┬──────┘
+          ▼
+   ┌─────────────┐
+   │  models/    │  ④ 通过 ORM 访问数据库
    └──────┬──────┘
           ▼
         MySQL
 ```
 
-**看代码**
-
-```python
-# routers/users.py —— 前厅，只有三行
-@router.post("", response_model=UserOut, status_code=201)
-def create_user(payload: UserCreate, db: Session = Depends(get_db)):
-    return user_service.create_user(db, payload.username, payload.phone, payload.balance)
-
-# services/user_service.py —— 后厨，所有业务逻辑在这
-def create_user(db, username, phone, balance=Decimal("0.00")):
-    ...
-```
-
-前厅里**一行 SQL 都没有**。这就是分层的意义。
-
-**记住一个坑**
-
-**别在路由里写业务逻辑。** 一旦写了，第二个接口要复用这段逻辑时，你就只能复制粘贴。第四章之所以要 service 层，就是为了这一刻。
+异常沿相反方向回传，最终由应用入口的异常处理器翻译成 HTTP 响应。
 
 ---
 
-## 知识点 2：schema —— 机场安检
+## 6.3 请求与响应模型
 
-**一句话**：请求先进 schema 检查格式，不合格当场拦下，根本到不了你的业务代码。
+### 6.3.1 作用
 
-**打个比方**
+Pydantic 模型用于定义接口的输入输出结构，承担三项职责：
 
-坐飞机：
+| 职责 | 说明 |
+| --- | --- |
+| 格式校验 | 类型、长度、格式、范围不合规时自动拒绝 |
+| 响应裁剪 | 只返回模型声明的字段，避免泄露内部字段 |
+| 生成文档 | `/docs` 中的参数说明由此自动生成 |
 
-1. 你先过安检（schema 校验）——行李里有违禁品，当场拦下；
-2. 过了安检才登机（进业务逻辑）；
-3. 安检不会管你"是不是本航班的乘客"（那是业务规则）。
-
-**看代码**
+### 6.3.2 请求模型定义
 
 ```python
+from decimal import Decimal
+from pydantic import BaseModel, Field
+
 class UserCreate(BaseModel):
-    username: str = Field(min_length=2, max_length=50)
-    phone: str = Field(pattern=r"^1\d{10}$")
-    balance: Decimal = Field(default=Decimal("0.00"), ge=0)
+    username: str = Field(min_length=2, max_length=50, description="用户名，2~50 字符")
+    phone: str = Field(pattern=r"^1\d{10}$", description="手机号，11 位，1 开头")
+    balance: Decimal = Field(default=Decimal("0.00"), ge=0, description="初始余额")
 ```
 
-这三行就定义了四条规则：用户名 2~50 字、手机号 11 位以 1 开头、余额不能是负数、不传余额默认 0。
+常用约束：
 
-**不合规会怎样**
+| 约束 | 含义 |
+| --- | --- |
+| `min_length` / `max_length` | 字符串长度范围 |
+| `pattern` | 正则匹配 |
+| `ge` / `le` | 数值大小范围（大于等于 / 小于等于） |
+| `default` | 缺省值 |
 
-真实运行结果：
+### 6.3.3 响应模型定义
+
+```python
+from pydantic import ConfigDict
+
+class UserOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)     # 允许直接接收 ORM 对象
+
+    id: int
+    username: str
+    phone: str
+    balance: Decimal
+    is_deleted: bool
+    created_at: datetime
+```
+
+配置 `from_attributes=True` 之后，路由函数可以直接 `return user`，FastAPI 会自动把 ORM 对象转换为 JSON。
+
+> **通俗理解**：schema 是机场安检——先检查你带的东西合不合格，不合格当场拦下，后面的流程根本不会开始。响应模型则像一张"对外公开的信息表"，只列该给客户看的字段。
+
+### 6.3.4 校验失败的示例
+
+示例文件：`chapters/ch06/code/01_schemas.py`
 
 ```plain
 --- ② 用户名太短（min_length=2） ---
@@ -145,132 +137,142 @@ class UserCreate(BaseModel):
     balance 默认值: 0.00   ← 默认值生效
 ```
 
-走接口时，这些错误会变成 **422**，而且你一行 `if` 都没写。
-
-**记住一个坑**
-
-**schema 挡不住业务规则。** 它能挡"格式错"，挡不住"用户名已存在"——后者要查数据库，是 service 的事。
-
-跑一遍：`python chapters/ch06/code/01_schemas.py`
+**注意**：schema 只能校验格式，无法校验业务规则。"用户名是否已存在"需要查询数据库，属于 service 层的职责。
 
 ---
 
-## 知识点 3：路由 —— 分诊台
+## 6.4 路由
 
-**一句话**：路由就是"哪个 URL 配哪个函数"，一个文件管一组相关接口。
+### 6.4.1 作用
 
-**打个比方**
+路由负责把"请求路径 + HTTP 方法"映射到具体的处理函数。
 
-医院分诊台：
-
-- 你说"我头疼" → 分诊台让你去内科（`GET /users`）
-- 你说"我要挂号" → 分诊台给你一张表去填（`POST /users`）
-- 你说"我要退号" → 分诊台告诉你走哪个窗口（`DELETE /users/1`）
-
-"路径 + 方法" 就是分诊台判断的依据。
-
-**看代码**
+### 6.4.2 定义方法
 
 ```python
+from fastapi import APIRouter
+
 router = APIRouter(prefix="/users", tags=["users"])
 
-@router.get("")                       # GET  /users
-@router.get("/{user_id}")             # GET  /users/1
-@router.post("")                      # POST /users
-@router.put("/{user_id}/balance")     # PUT  /users/1/balance
-@router.delete("/{user_id}")          # DELETE /users/1
+@router.get("", response_model=UserPage)
+def list_users(...): ...
+
+@router.get("/{user_id}", response_model=UserOut)
+def get_user(user_id: int, ...): ...
+
+@router.post("", response_model=UserOut, status_code=201)
+def create_user(...): ...
 ```
 
-**五个接口对应的真实路径**
+`prefix` 会加到所有路径前面，`tags` 用于在文档中分组。
 
-```plain
-/health                       探针
-/health/db                    探针（查库）
-/users                        列表（分页）
-/users/{user_id}              详情 / 删除
-/users/{user_id}/balance      改余额
+### 6.4.3 注册路由
+
+定义之后必须在应用入口注册，否则访问返回 404：
+
+```python
+from app.routers import health, users
+
+app.include_router(health.router)
+app.include_router(users.router)
 ```
 
-**记住一个坑**
+### 6.4.4 本章的接口清单
 
-**路由注册了才有用。** 写完 `routers/users.py`，一定要在 `app/main.py` 里 `app.include_router(users.router)`，否则访问还是 404，而且报错很难懂。
+| 方法 | 路径 | 说明 | 成功状态码 |
+| --- | --- | --- | --- |
+| GET | `/health` | 进程存活探测 | 200 |
+| GET | `/health/db` | 数据库连通探测 | 200 |
+| GET | `/users` | 用户列表（分页） | 200 |
+| GET | `/users/{user_id}` | 用户详情 | 200 |
+| POST | `/users` | 创建用户 | 201 |
+| PUT | `/users/{user_id}/balance` | 调整余额 | 200 |
+| DELETE | `/users/{user_id}` | 删除用户（软删） | 204 |
+
+> **通俗理解**：路由像医院分诊台——你说"我头疼"，它让你去内科；你说"我要退号"，它指你去另一个窗口。分诊依据就是"路径 + 方法"。
 
 ---
 
-## 知识点 4：状态码 —— 办事回执
+## 6.5 状态码
 
-**一句话**：状态码是告诉调用方"这件事办成了没有、为什么没成"。
+### 6.5.1 常用状态码
 
-**打个比方**
+| 状态码 | 含义 | 产生位置 |
+| --- | --- | --- |
+| 200 | 请求成功 | 默认 |
+| 201 | 资源创建成功 | 路由中显式声明 |
+| 204 | 成功但无响应体 | 路由中显式声明 |
+| 400 | 业务参数不合法 | service 抛异常 |
+| 404 | 资源不存在 | service 抛 `NotFoundError` |
+| 409 | 资源冲突（如唯一键重复） | service 抛 `ConflictError` |
+| 422 | 请求格式校验失败 | FastAPI 自动返回 |
+| 500 | 未捕获的服务端异常 | 框架默认 |
 
-办完事，工作人员递给你一张回执：
-
-| 回执 | 意思 |
-| --- | --- |
-| 200 | 办好了，结果在这 |
-| 201 | 新办了一个，编号在这 |
-| 204 | 办好了，没有东西给你（删除了） |
-| 400 | 你带的东西不对（业务层面） |
-| 404 | 没这个东西 |
-| 409 | 撞车了（比如重名） |
-| 422 | 你的材料格式不对（安检没过） |
-
-**看代码**
+### 6.5.2 声明方式
 
 ```python
-@router.post("", response_model=UserOut, status_code=201)     # 创建 → 201
+@router.post("", status_code=201)          # 创建
 def create_user(...): ...
 
-@router.delete("/{user_id}", status_code=204)                 # 删除 → 204
+@router.delete("/{user_id}", status_code=204)   # 删除
 def delete_user(...): ...
 ```
 
-不写 `status_code` 就是默认 200。所以 201 和 204 要**显式声明**。
+不声明时默认为 200，因此 201 与 204 必须显式指定。
 
-**记住一个坑**
+**注意**：状态码 204 表示"成功但没有响应体"，处理函数不应返回任何内容。
 
-**204 不能有响应体。** 你如果既声明 204 又 `return user`，FastAPI 会报错或者把响应搞乱。204 就是"办好了，没东西给你"。
+> **通俗理解**：状态码像办完事递给你的回执单——200 是"办好了，结果在这"，201 是"新办了一个，编号在这"，204 是"办好了，没东西给你"，422 是"你材料不合格，还没开始办"。
 
 ---
 
-## 知识点 5：异常变状态码 —— 服务员话术
+## 6.6 异常处理
 
-**一句话**：后厨出问题，不该直接喊给客人听；前台要翻译成客人能懂的"话术"。
+### 6.6.1 业务异常定义
 
-**打个比方**
-
-- 后厨：`IntegrityError: Duplicate entry 'u123' for key 'users.username'`（客人听不懂）
-- 服务员说：**"抱歉，这个用户名已经有人用了"**（客人听得懂，还知道该怎么办）
-
-这就是"业务异常"的作用：把数据库报错翻译成人话。
-
-**看代码**
+业务异常定义在 `app/core/exceptions.py`，自身携带状态码：
 
 ```python
-# services/user_service.py —— 后厨把技术错误翻译成业务异常
-try:
-    db.commit()
-except IntegrityError:
-    db.rollback()
-    raise ConflictError(f"用户名或手机号已存在：{username}")
+class AppError(Exception):
+    def __init__(self, message: str, status_code: int = 400):
+        self.message = message
+        self.status_code = status_code
+        super().__init__(message)
 
-# app/core/exceptions.py —— 业务异常自带状态码
+class NotFoundError(AppError):
+    def __init__(self, message="资源不存在"):
+        super().__init__(message, status_code=404)
+
 class ConflictError(AppError):
-    def __init__(self, message): super().__init__(message, status_code=409)
+    def __init__(self, message="资源冲突"):
+        super().__init__(message, status_code=409)
+```
 
-# app/main.py —— 统一翻译成 HTTP 响应
+### 6.6.2 统一映射
+
+在应用入口注册异常处理器，把业务异常翻译为 HTTP 响应：
+
+```python
 @app.exception_handler(AppError)
-async def handler(request, exc):
+async def app_error_handler(request: Request, exc: AppError) -> JSONResponse:
     return JSONResponse(status_code=exc.status_code, content={"detail": exc.message})
 ```
 
-**状态码是谁产生的**
+于是 service 层只需 `raise NotFoundError("用户 1 不存在")`，客户端会收到：
+
+```json
+{"detail": "用户 1 不存在"}
+```
+
+**注意**：service 层应当抛业务异常，而不是 `HTTPException`。后者会让业务逻辑依赖 Web 框架，无法在命令行工具或定时任务中复用。
+
+### 6.6.3 各状态码的产生位置
 
 ```plain
    客户端请求
       │
       ▼
-   ① 422  ← schema 校验失败（还没进业务）
+   ① 422  ← schema 校验失败（尚未进入业务逻辑）
       │
       ▼
    ② 404  ← service 抛 NotFoundError
@@ -280,23 +282,72 @@ async def handler(request, exc):
    ③ 200 / 201 / 204  ← service 正常返回
 ```
 
-**记住一个坑**
+### 6.6.4 示例与运行结果
 
-**service 里抛的应该是业务异常，不是 `HTTPException`。** 抛 HTTP 异常，这段逻辑就离不开 Web 框架了——写命令行工具、定时任务时没法复用。
+示例文件：`chapters/ch06/code/03_api_write.py`
 
-跑一遍：`python chapters/ch06/code/03_api_write.py`
+```plain
+--- ① 创建用户 → 201 ---
+    状态码: 201
+
+--- ② 再建一个同名的 → 409 ---
+    状态码: 409
+    响应: {'detail': '用户名或手机号已存在：api90067'}
+
+--- ③ 入参不合法 → 422（还没进 service） ---
+    状态码: 422
+    username: String should have at least 2 characters
+
+--- ④ 调整余额 → 200 ---
+    状态码: 200  新余额: 150.00
+
+--- ⑤ 删除（软删）→ 204 ---
+    状态码: 204  响应体: ''
+```
+
+> **通俗理解**：后厨做菜做砸了，不应该直接喊给客人听；服务员要翻译成客人能懂的话。`IntegrityError: Duplicate entry` 就是后厨的术语，"这个用户名已经有人用了"才是客人能听懂的。
 
 ---
 
-## 知识点 6：自己试菜 —— 不起服务器也能测
+## 6.7 分页接口
 
-**一句话**：`TestClient` 把请求直接打进应用，不用启动 uvicorn。
+分页接口需要同时返回数据与分页信息：
 
-**打个比方**
+```python
+@router.get("", response_model=UserPage)
+def list_users(
+    page: int = Query(1, ge=1, description="页码，从 1 开始"),
+    size: int = Query(10, ge=1, le=100, description="每页条数，最大 100"),
+    db: Session = Depends(get_db),
+) -> UserPage:
+    items, total = user_service.list_users(db, page=page, size=size)
+    return UserPage(total=total, page=page, size=size, items=items)
+```
 
-餐厅试菜：不用等客人来，厨师自己端一盘，走一遍完整流程。
+响应结构：
 
-**看代码**
+```json
+{
+  "total": 3,
+  "page": 1,
+  "size": 10,
+  "items": [ ... ]
+}
+```
+
+设计要点：
+
+1. `size` 必须设置上限（如 `le=100`），防止客户端请求过多数据；
+2. `total` 来自 `COUNT(*)`，不是当前页的条数；
+3. 分页信息与数据放在同一对象中，便于前端一次取全。
+
+---
+
+## 6.8 接口测试
+
+### 6.8.1 TestClient
+
+`TestClient` 可以直接向应用发送请求，无需启动 uvicorn 服务：
 
 ```python
 from fastapi.testclient import TestClient
@@ -307,7 +358,11 @@ with TestClient(app) as client:
     print(r.status_code, r.json())
 ```
 
-**真实结果**
+使用 `with` 语句可以确保应用的生命周期事件（启动、关闭）被正确触发。
+
+### 6.8.2 示例与运行结果
+
+示例文件：`chapters/ch06/code/02_api_read.py`
 
 ```plain
 --- ① 健康检查 ---
@@ -324,140 +379,46 @@ with TestClient(app) as client:
 --- ⑤ 参数不合法 → 422（FastAPI 自动挡） ---
     状态码: 422
     第一条错误: Input should be less than or equal to 100
+
+--- ⑥ 打开文档看看 ---
+    已注册的接口: ['/health', '/health/db', '/users', '/users/{user_id}', '/users/{user_id}/balance']
 ```
 
-**记住一个坑**
-
-**别用 `client = TestClient(app)` 然后忘了关。** 用 `with TestClient(app) as client:`，退出时会正确触发应用的启动/关闭流程（包括关闭数据库连接池）。
-
-跑一遍：`python chapters/ch06/code/02_api_read.py`
+> **通俗理解**：不用等客人上门，厨师自己端一盘走一遍完整流程。接口测试就是这个意思——自己发请求、自己看响应，第七章的自动化测试也是用这套工具。
 
 ---
 
-## 面试常问的 3 个问题
+## 6.9 常见错误
 
-### 1. FastAPI 里怎么管理数据库连接？
-
-> **一句话**：用依赖注入加 `yield`，每个请求一个 Session，请求结束自动归还。
->
-> **展开**：
-> 1. `get_db()` 是个生成器依赖：创建 Session → `yield db` → `finally: db.close()`；
-> 2. 路由参数写 `db: Session = Depends(get_db)`，FastAPI 自动注入并在响应后执行 `finally`；
-> 3. Session 只在执行 SQL 时才向 Engine 借连接，用完立刻还。
->
-> **加分项**：`yield` 保证请求抛异常时也会关闭，避免连接泄漏——和第二章"忘记 close 会卡死池子"是同一个问题。
-
-### 2. 400、422、409、500 分别代表什么？
-
-> **一句话**：422 是格式错，400 是业务参数错，409 是冲突，500 是没兜住的异常。
->
-> **展开**：
-> - 422：Pydantic 校验失败（类型、长度、格式、范围），FastAPI 自动返回；
-> - 400：格式对但业务不允许，比如"余额不足"；
-> - 409：资源冲突，典型是唯一键重复；
-> - 500：代码抛了没捕获的异常，属于 bug，不该出现在正常流程里。
->
-> **加分项**：我们的做法是 service 抛 `AppError` 子类（404 / 409），`main.py` 统一映射，路由里一个 try 都不写。
-
-### 3. 为什么要有 schema 层，直接用 ORM 模型不行吗？
-
-> **一句话**：ORM 描述数据库，schema 描述接口，两者变更节奏不同。
->
-> **展开**：
-> 1. 安全：schema 是白名单，能挡住不该暴露的字段；
-> 2. 稳定：数据库加一列，不会让接口响应突然多一个字段；
-> 3. 校验：`min_length`、`pattern` 这类规则属于接口契约，不该写进表结构。
->
-> **加分项**：`UserOut` 同时是响应模型和文档来源，`/docs` 里的字段说明就是从 `Field(description=...)` 自动生成的。
+| 错误信息 | 原因 | 解决方法 |
+| --- | --- | --- |
+| 接口返回 404 但路径无误 | 路由未注册 | 在 `main.py` 中 `include_router` |
+| `ModuleNotFoundError: No module named 'app'` | 未在仓库根目录执行 | `cd` 到仓库根目录 |
+| 返回 500 且无日志 | 异常未被捕获 | 业务异常应继承 `AppError` |
+| `response_model` 报字段缺失 | ORM 对象缺字段或字段名不符 | 配置 `from_attributes=True` 并核对字段名 |
+| 422 但请求体看起来正确 | 类型不匹配（如字符串传给了数字字段） | 检查 `detail` 中提示的字段 |
+| `Decimal` 被序列化为字符串 | Pydantic 默认行为 | 前端按字符串处理，避免浮点精度问题 |
 
 ---
 
-## 这一章只要记住三句话
+## 6.10 本章小结
 
-1. **schema 管格式，service 管业务，router 只管 HTTP**
-2. **201 创建、204 删除、409 冲突、422 格式**
-3. **业务异常在 service 抛，在 main 统一映射**
-
----
-
-## 练习顺序
-
-```bash
-cd D:/github_repository/mysql-learning
-export MYSQL_PASSWORD=你的密码
-
-python chapters/ch06/code/01_schemas.py      # 安检规则
-python chapters/ch06/code/02_api_read.py     # 读接口 200/404/422
-python chapters/ch06/code/03_api_write.py    # 写接口 201/409/204
-```
-
-也可以直接起服务看文档：
-
-```bash
-uvicorn app.main:app --reload
-# 打开 http://127.0.0.1:8000/docs
-```
+1. 接口开发遵循三层结构：`routers` 只处理 HTTP，`services` 处理业务与事务，`models` 描述表结构。
+2. Pydantic 模型负责格式校验与响应裁剪，`from_attributes=True` 使其可直接接收 ORM 对象。
+3. 201、204 必须显式声明；422 由框架自动产生，404 与 409 由业务异常映射而来。
+4. 业务异常应继承自定义基类，由应用入口统一映射为 HTTP 响应，service 层不应依赖 `HTTPException`。
+5. 分页接口需返回 `total/page/size/items` 四部分，`size` 必须设上限。
+6. `TestClient` 可在不启动服务器的情况下完成接口自测，也是后续编写自动化测试的基础。
 
 ---
 
-## 学完可以自问三句
+## 6.11 练习
 
-- 422 和 409 分别是谁产生的？
-- 为什么 service 里不该抛 `HTTPException`？
-- `get_db` 里的 `yield` 有什么用？
-
----
-
-## 速查卡（忘了就翻这一页）
-
-**三层骨架**
-
-```python
-# schemas/user.py —— 安检
-class UserCreate(BaseModel):
-    username: str = Field(min_length=2, max_length=50)
-    phone: str = Field(pattern=r"^1\d{10}$")
-
-class UserOut(BaseModel):
-    model_config = ConfigDict(from_attributes=True)   # 能直接吃 ORM 对象
-    id: int; username: str; balance: Decimal
-
-# routers/users.py —— 前厅
-@router.get("", response_model=UserPage)
-def list_users(page: int = Query(1, ge=1), db: Session = Depends(get_db)):
-    items, total = user_service.list_users(db, page=page, size=10)
-    return UserPage(total=total, page=page, size=10, items=items)
-
-# main.py —— 挂上去
-app.include_router(users.router)
-```
-
-**状态码**
-
-| 场景 | 码 |
-| --- | --- |
-| 查到 / 改成功 | 200 |
-| 创建成功 | 201 |
-| 删除成功（无响应体） | 204 |
-| 业务参数错 | 400 |
-| 查不到 | 404 |
-| 唯一键冲突 | 409 |
-| 格式校验失败 | 422 |
-
-**测试**
-
-```python
-with TestClient(app) as client:
-    r = client.get("/users/1")
-    assert r.status_code == 200
-```
-
-**三句话**
-
-1. schema 管格式，service 管业务，router 只管 HTTP
-2. 201 创建、204 删除、409 冲突、422 格式
-3. 业务异常在 service 抛，在 main 统一映射
+1. 新增一个 `GET /users/search?keyword=` 接口，支持按用户名模糊搜索，并支持分页。
+2. 为 `DELETE /users/{id}` 增加"恢复"接口 `POST /users/{id}/restore`，把 `is_deleted` 改回 0。
+3. 给创建用户接口增加一条业务规则：余额不能超过 100000，超出时返回 400，并写出对应的异常类。
+4. 用 `TestClient` 写一段脚本，验证"创建 → 查询 → 删除 → 再查"的完整流程。
 
 ---
 
-<small>相关：[第五章 -- 让表之间连起来](../../ch05/notes/SQLAlchemy%20进阶.md) · [架构说明](../../../docs/ARCHITECTURE.md)</small>
+<small>相关：[第五章 -- SQLAlchemy 关系映射](../../ch05/notes/SQLAlchemy%20进阶.md) · [架构说明](../../../docs/ARCHITECTURE.md)</small>
