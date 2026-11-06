@@ -4,9 +4,10 @@
 """
 
 from fastapi import APIRouter, Depends, Query, status
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from app.deps import get_db
+from app.deps import get_db, require_role
 from app.schemas.user import UserCreate, UserOut, UserPage, UserUpdateBalance
 from app.services import user_service
 
@@ -59,3 +60,35 @@ def update_balance(
 )
 def delete_user(user_id: int, db: Session = Depends(get_db)) -> None:
     user_service.soft_delete(db, user_id)
+
+
+# ---- 角色管理（第七章）--------------------------------------------
+
+
+class RoleAssignIn(BaseModel):
+    role: str = Field(description="角色名,如 admin / editor / viewer")
+
+
+class RolesOut(BaseModel):
+    user_id: int
+    roles: list[str]
+
+
+@router.get("/{user_id}/roles", response_model=RolesOut, summary="查询用户角色")
+def get_user_roles(user_id: int, db: Session = Depends(get_db)) -> RolesOut:
+    return RolesOut(user_id=user_id, roles=user_service.list_roles(db, user_id))
+
+
+@router.post(
+    "/{user_id}/roles",
+    response_model=RolesOut,
+    summary="分配角色（仅 admin）",
+    dependencies=[Depends(require_role("admin"))],
+)
+def assign_user_role(
+    user_id: int,
+    payload: RoleAssignIn,
+    db: Session = Depends(get_db),
+) -> RolesOut:
+    roles = user_service.assign_role(db, user_id, payload.role)
+    return RolesOut(user_id=user_id, roles=roles)

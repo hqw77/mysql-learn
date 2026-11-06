@@ -157,8 +157,12 @@
 | 模型 | `models/order.py`、`models/role.py` | ✅ 一对多 + 多对多 | 第五章 |
 | 校验 | `schemas/user.py` | ✅ | 第六章 |
 | 业务 | `services/user_service.py` | ✅ | 第四章 |
-| 迁移 | `migrations/`（Alembic） | ✅ `0001` + `0002` | 第三、五章 |
-| 测试 | `tests/` | 未建 | 第七章 |
+| 业务 | `services/auth_service.py` | ✅ 注册与登录 | 第七章 |
+| 安全 | `core/security.py` | ✅ argon2 + JWT | 第七章 |
+| 鉴权 | `deps.py` 的 `get_current_user`、`require_role` | ✅ | 第七章 |
+| 路由 | `routers/auth.py`、`routers/wallet.py` | ✅ 认证与转账 | 第七章 |
+| 迁移 | `migrations/`（Alembic） | ✅ `0001` ~ `0003` | 第三、五、七章 |
+| 测试 | `tests/` | ✅ 8 个用例 | 第七章 |
 
 ## 7. Mermaid 版本（GitHub 直接渲染）
 

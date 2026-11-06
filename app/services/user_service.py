@@ -13,8 +13,8 @@ from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.core.exceptions import ConflictError, NotFoundError
-from app.models import User
+from app.core.exceptions import AppError, ConflictError, NotFoundError
+from app.models import Role, User
 
 
 def create_user(
@@ -81,3 +81,57 @@ def hard_delete(db: Session, user_id: int) -> None:
     user = get_user(db, user_id)
     db.delete(user)
     db.commit()
+
+
+# ---- 角色相关（第七章）--------------------------------------------
+
+
+def assign_role(db: Session, user_id: int, role_name: str) -> list[str]:
+    """给用户分配角色。角色不存在时抛 NotFoundError。"""
+    user = get_user(db, user_id)
+    role = db.scalar(select(Role).where(Role.name == role_name))
+    if role is None:
+        raise NotFoundError(f"角色 {role_name} 不存在")
+
+    if role not in user.roles:          # 中间表是联合主键，重复添加也安全，但没必要发 SQL
+        user.roles.append(role)
+        db.commit()
+    return [r.name for r in user.roles]
+
+
+def list_roles(db: Session, user_id: int) -> list[str]:
+    """查询用户已有的角色名。"""
+    user = get_user(db, user_id)
+    return [r.name for r in user.roles]
+
+
+# ---- 转账（第七章：事务实战）--------------------------------------
+
+
+def transfer(db: Session, from_id: int, to_id: int, amount: Decimal) -> tuple[User, User]:
+    """两个用户之间转账。任一步失败则整体回滚。
+
+    ⚠️ 这里用"读出来改属性"的写法，并发下存在丢更新风险，见第五章 5.6。
+       生产环境应改用 with_for_update() 或原子 SQL。
+    """
+    if amount <= 0:
+        raise AppError("转账金额必须大于 0")
+    if from_id == to_id:
+        raise AppError("不能给自己转账")
+
+    src = get_user(db, from_id)
+    dst = get_user(db, to_id)
+    if src.balance < amount:
+        raise AppError(f"余额不足，当前余额 {src.balance}")
+
+    try:
+        src.balance = src.balance - amount
+        dst.balance = dst.balance + amount
+        db.commit()                      # 两条 UPDATE 在同一个事务里
+    except Exception:
+        db.rollback()                    # 任何一步出错，两边都撤销
+        raise
+
+    db.refresh(src)
+    db.refresh(dst)
+    return src, dst

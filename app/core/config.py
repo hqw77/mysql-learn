@@ -19,6 +19,11 @@ class Settings(BaseSettings):
     app_name: str = "mysql-learning"
     debug: bool = True
 
+    # ---- 认证 ----
+    jwt_secret: str = "dev-secret-change-me-please-0123456789"   # ⚠️ 生产环境必须换成随机长字符串(≥32 字节)
+    jwt_algorithm: str = "HS256"
+    jwt_expire_minutes: int = 60
+
     # ---- 数据库连接 ----
     mysql_host: str = "localhost"
     mysql_port: int = 3306

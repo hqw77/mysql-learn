@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 from app.core.config import settings
 from app.core.exceptions import AppError
 from app.db.engine import engine
-from app.routers import health, users
+from app.routers import auth, health, users, wallet
 
 
 @asynccontextmanager
@@ -26,7 +26,9 @@ app = FastAPI(
 )
 
 app.include_router(health.router)
+app.include_router(auth.router)
 app.include_router(users.router)
+app.include_router(wallet.router)
 
 
 @app.exception_handler(AppError)

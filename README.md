@@ -31,8 +31,8 @@ chapters/ch01/
 | 第四章 | SQLAlchemy ORM CRUD | 已完成 | `chapters/ch04/notes/` | `chapters/ch04/code/` + `app/services/` |
 | 第五章 | SQLAlchemy 进阶（关系 / N+1 / 并发 / 迁移） | 已完成 | `chapters/ch05/notes/` | `chapters/ch05/code/` + `app/models/order.py`、`role.py` |
 | 第六章 | FastAPI + MySQL | 已完成 | `chapters/ch06/notes/` | `chapters/ch06/code/` + `app/schemas/`、`app/routers/users.py` |
-| 第七章 | 完整项目实战 | 下一个 | — | — |
-| 第八章 | 面试题与项目复盘 | 待开始 | — | — |
+| 第七章 | 完整项目实战（认证 / 权限 / 事务 / 测试） | 已完成 | `chapters/ch07/notes/` | `chapters/ch07/code/` + `app/core/security.py`、`app/routers/auth.py`、`tests/` |
+| 第八章 | 面试题与项目复盘 | 下一个 | — | — |
 
 ## 目录结构
 
@@ -61,36 +61,44 @@ mysql-learning/
 │   ├── ch06/
 │   │   ├── notes/FastAPI + MySQL.md
 │   │   └── code/                 # 01~03（schema 校验、读接口、写接口）
+│   ├── ch07/
+│   │   ├── notes/完整项目实战.md
+│   │   └── code/                 # 01~04（哈希、注册登录、鉴权、转账）
 │   └── extras/                   # 番外：主线上放不下的专题
 │       └── notes/01-Alembic 数据库迁移.md
 ├── app/                          # 作品集：第 4 章开始长出业务代码
 │   ├── main.py                   # 入口：路由注册、异常处理、生命周期
-│   ├── deps.py                   # 依赖注入出口（get_db）
+│   ├── deps.py                   # get_db / get_current_user / require_role
 │   ├── core/
 │   │   ├── config.py             # 配置,读 .env
+│   │   ├── security.py           # 密码哈希 + JWT 签发校验
 │   │   └── exceptions.py         # 业务异常 → HTTP 状态码
 │   ├── db/
 │   │   ├── base.py               # DeclarativeBase
 │   │   ├── engine.py             # Engine + 连接池
 │   │   └── session.py            # SessionLocal 与 get_db
 │   ├── models/                   # User / Order / Role（一对多 + 多对多）
-│   ├── schemas/                  # UserCreate / UserOut / UserPage
-│   ├── services/                 # user_service：业务逻辑与事务边界
+│   ├── schemas/                  # 请求响应模型 + 认证模型
+│   ├── services/                 # user_service / auth_service
 │   └── routers/
 │       ├── health.py             # /health、/health/db
-│       └── users.py              # /users 五个接口
+│       ├── auth.py               # /auth 注册 / 登录 / 当前用户
+│       ├── users.py              # /users 增删改查 + 角色
+│       └── wallet.py             # /transfer 转账
+├── tests/                        # pytest 用例（第七章）
+│   ├── conftest.py               # client / temp_user fixture
+│   └── test_auth.py              # 8 个认证用例
 ├── migrations/                   # Alembic 迁移
 │   ├── env.py                    # 从 .env 取连接串,include_object 防误删
 │   └── versions/
 │       ├── 0001_initial_schema.py
-│       └── 0002_add_roles.py     # 第五章：roles + user_roles
+│       ├── 0002_add_roles.py     # 第五章：roles + user_roles
+│       └── 0003_add_password_hash.py   # 第七章：password_hash
 ├── docs/                         # 架构说明 · 教程规划 · 文档排版模式
 ├── alembic.ini
 ├── .env.example
 └── requirements.txt
 ```
-
-> `app/schemas/`、`app/services/`、`tests/` 在第四章开工时再建,现在不占位——空目录只会让人以为废弃了。
 
 ## 快速开始
 
@@ -189,6 +197,12 @@ uvicorn app.main:app --reload
 | --- | --- | --- |
 | Pydantic 校验与响应裁剪、状态码语义、异常到 HTTP 的映射、分页接口、TestClient | [第六章](chapters/ch06/notes/FastAPI%20+%20MySQL.md) | `chapters/ch06/code/01~03` + `app/schemas/`、`app/routers/users.py` |
 
+### 第七章 · 完整项目实战
+
+| 主题 | 笔记 | 代码 |
+| --- | --- | --- |
+| 密码哈希(argon2)、注册登录、JWT 签发校验、鉴权依赖、角色权限、转账事务、pytest 自动化测试 | [第七章](chapters/ch07/notes/完整项目实战.md) | `chapters/ch07/code/01~04` + `app/core/security.py`、`app/routers/auth.py`、`tests/` |
+
 完整学习路线见 [Python + MySQL 进阶实战教程](chapters/README.md)。
 
 ## 数据库迁移
@@ -242,6 +256,10 @@ export MYSQL_PASSWORD=你的密码
 | `python chapters/ch06/code/01_schemas.py` | 案例1：Pydantic 校验规则 |
 | `python chapters/ch06/code/02_api_read.py` | 案例2：读接口、404、422 |
 | `python chapters/ch06/code/03_api_write.py` | 案例3：写接口 201/409/204 |
+| `python chapters/ch07/code/01_password_hash.py` | 案例1：密码哈希与校验 |
+| `python chapters/ch07/code/02_register_login.py` | 案例2：注册 201 / 重复 409 / 登录拿令牌 |
+| `python chapters/ch07/code/03_auth_flow.py` | 案例3：401 / 403 与角色授权 |
+| `python chapters/ch07/code/04_transfer.py` | 案例4：转账事务与余额回滚 |
 
 ### 第二章实测数据
 
@@ -264,6 +282,9 @@ export MYSQL_PASSWORD=你的密码
 | FastAPI | 0.162.0 | Web 框架 |
 | uvicorn | 0.54.0 | ASGI 服务器 |
 | pydantic-settings | 2.16.2 | 配置管理 |
+| argon2-cffi | 25.1.0 | 密码哈希（第七章） |
+| PyJWT | 2.15.1 | JWT 签发与校验（第七章） |
+| pytest | 9.2.0 | 自动化测试（第七章） |
 
 ## 约定
 

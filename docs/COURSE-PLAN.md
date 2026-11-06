@@ -101,16 +101,17 @@ ch1 SQL 基础
 | 4 | ✅ | ✅ | ✅ | 完成 |
 | 5 | ✅ | ✅ | ✅ | 完成 |
 | 6 | ✅ | ✅ | ✅ | 完成 |
-| 7 | ⬜ | ⬜ | ⬜ | 未开始（当前停在第六章） |
-| 8 | ⬜ | ⬜ | ⬜ | 未开始 |
+| 7 | ✅ | ✅ | ✅ | 完成 |
+| 8 | ⬜ | ⬜ | ⬜ | 未开始（当前停在第七章） |
 
-**第四~六章工程增量**
+**第四~七章工程增量**
 
 | 章 | 新增文件 |
 | --- | --- |
 | 4 | `app/services/user_service.py`（业务逻辑与事务边界） |
 | 5 | `app/models/order.py`、`app/models/role.py`、`migrations/versions/0002_add_roles.py` |
 | 6 | `app/schemas/user.py`、`app/routers/users.py`,`main.py` 注册路由 |
+| 7 | `app/core/security.py`、`app/services/auth_service.py`、`app/routers/auth.py`、`app/routers/wallet.py`、`migrations/versions/0003_add_password_hash.py`、`tests/` |
 
 ## 7. 第三章的收口
 

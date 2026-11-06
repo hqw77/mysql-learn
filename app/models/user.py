@@ -33,6 +33,12 @@ class User(Base):
         String(50), nullable=False, unique=True, comment="用户名,唯一"
     )
     phone: Mapped[str] = mapped_column(String(20), nullable=False, unique=True)
+    password_hash: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+        server_default=text("''"),
+        comment="密码哈希,不存明文",
+    )
     balance: Mapped[Decimal] = mapped_column(
         Numeric(10, 2),
         nullable=False,
