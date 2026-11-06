@@ -162,7 +162,7 @@ uvicorn app.main:app --reload
 
 | 主题 | 笔记 |
 | --- | --- |
-| 连接池原理、PooledDB 参数详解、压测对比、面试题 | [第二章 -- Python 数据库连接池](chapters/ch02/notes/Python%20数据库连接池.md) |
+| 建连的四步开销、池子的三条规则、PooledDB 五个参数、压测对比、常见错误 | [第二章 -- Python 数据库连接池](chapters/ch02/notes/Python%20数据库连接池.md) |
 
 ### 第三章 · SQLAlchemy ORM 基础
 
