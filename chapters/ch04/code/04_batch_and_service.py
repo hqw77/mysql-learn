@@ -1,8 +1,8 @@
-"""第四章 · 案例 4：批量写入的差距，以及为什么要有 service 层。
+"""第四章 · 案例 4：批量写入的差距,以及为什么要有 service 层。
 
 学到什么：
     逐条 commit 是一百次网络往返；add_all + 一次 commit 快一个数量级。
-    同一套操作封装进 service 后，调用方只剩一行，且异常已经翻译成业务语义。
+    同一套操作封装进 service 后,调用方只剩一行,且异常已经翻译成业务语义。
 
 怎么跑：
     export MYSQL_PASSWORD=你的密码
@@ -55,7 +55,7 @@ if __name__ == "__main__":
         print(f"    批量 commit : {fast:6.3f}s")
         print(f"    快 {slow / fast:.1f} 倍")
 
-        show("③ 换成 service 层，调用方只写一行")
+        show("③ 换成 service 层,调用方只写一行")
         user = user_service.create_user(db, f"{prefix}_svc", f"133{stamp}001"[:20], Decimal("50.00"))
         print("    创建:", user)
 
@@ -66,7 +66,7 @@ if __name__ == "__main__":
         print("    改余额:", updated.balance, "（50 + 150）")
 
         page, total = user_service.list_users(db, page=1, size=3)
-        print(f"    分页: 共 {total} 条，本页 {len(page)} 条")
+        print(f"    分页: 共 {total} 条,本页 {len(page)} 条")
 
         show("④ service 把数据库异常翻译成了业务异常")
         try:

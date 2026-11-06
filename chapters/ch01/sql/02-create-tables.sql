@@ -3,10 +3,10 @@ USE learn_mysql;
 -- 1. 用户表
 CREATE TABLE users (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY COMMENT '用户主键',
-    username VARCHAR(50) NOT NULL UNIQUE COMMENT '用户名，唯一',
-    phone CHAR(11) NOT NULL UNIQUE COMMENT '手机号，定长11位',
-    balance DECIMAL(10, 2) NOT NULL DEFAULT 0.00 COMMENT '账户余额，保留两位小数',
-    is_deleted TINYINT(1) NOT NULL DEFAULT 0 COMMENT '软删除标记：0正常，1已删除',
+    username VARCHAR(50) NOT NULL UNIQUE COMMENT '用户名,唯一',
+    phone CHAR(11) NOT NULL UNIQUE COMMENT '手机号,定长11位',
+    balance DECIMAL(10, 2) NOT NULL DEFAULT 0.00 COMMENT '账户余额,保留两位小数',
+    is_deleted TINYINT(1) NOT NULL DEFAULT 0 COMMENT '软删除标记：0正常,1已删除',
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '注册时间'
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = '用户表';
 
@@ -25,7 +25,7 @@ CREATE TABLE orders (
     order_no VARCHAR(32) NOT NULL UNIQUE COMMENT '订单号',
     user_id INT UNSIGNED NOT NULL COMMENT '下单用户ID',
     total_amount DECIMAL(10, 2) NOT NULL COMMENT '订单总金额',
-    status TINYINT NOT NULL DEFAULT 0 COMMENT '状态：0待支付，1已支付，2已发货',
+    status TINYINT NOT NULL DEFAULT 0 COMMENT '状态：0待支付,1已支付,2已发货',
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = '订单主表';
 

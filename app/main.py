@@ -15,7 +15,7 @@ from app.routers import health, users
 async def lifespan(app: FastAPI):
     # 启动：以后在这里做连接池预热、缓存加载
     yield
-    # 关闭：释放连接池，避免进程退出时连接悬空
+    # 关闭：释放连接池,避免进程退出时连接悬空
     engine.dispose()
 
 

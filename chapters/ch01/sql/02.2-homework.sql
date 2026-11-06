@@ -1,6 +1,6 @@
 USE learn_mysql;
 
--- 先删除（注意顺序：先删子表，再删父表）
+-- 先删除（注意顺序：先删子表,再删父表）
 DROP TABLE IF EXISTS borrows;
 
 DROP TABLE IF EXISTS books;
@@ -32,7 +32,7 @@ CREATE TABLE books (
 CREATE TABLE readers (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY COMMENT '读者主键',
     name VARCHAR(50) NOT NULL COMMENT '读者姓名',
-    phone CHAR(11) NOT NULL UNIQUE COMMENT '手机号，唯一约束',
+    phone CHAR(11) NOT NULL UNIQUE COMMENT '手机号,唯一约束',
     join_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '注册日期'
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = '读者表';
 
@@ -42,5 +42,5 @@ CREATE TABLE borrows (
     reader_id INT UNSIGNED NOT NULL COMMENT '关联读者ID',
     book_id INT UNSIGNED NOT NULL COMMENT '关联图书ID',
     borrow_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '借出时间',
-    return_date DATETIME DEFAULT NULL COMMENT '归还时间，可空（NULL表示还没还）'
+    return_date DATETIME DEFAULT NULL COMMENT '归还时间,可空（NULL表示还没还）'
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = '借阅记录表';

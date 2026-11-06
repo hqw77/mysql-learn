@@ -1,4 +1,4 @@
-"""用户接口：HTTP 层，只负责收参数、返响应、定状态码。
+"""用户接口：HTTP 层,只负责收参数、返响应、定状态码。
 
 业务全在 user_service；这里连 SQL 都不出现。
 """
@@ -15,8 +15,8 @@ router = APIRouter(prefix="/users", tags=["users"])
 
 @router.get("", response_model=UserPage, summary="用户列表（分页）")
 def list_users(
-    page: int = Query(1, ge=1, description="页码，从 1 开始"),
-    size: int = Query(10, ge=1, le=100, description="每页条数，最大 100"),
+    page: int = Query(1, ge=1, description="页码,从 1 开始"),
+    size: int = Query(10, ge=1, le=100, description="每页条数,最大 100"),
     db: Session = Depends(get_db),
 ) -> UserPage:
     items, total = user_service.list_users(db, page=page, size=size)

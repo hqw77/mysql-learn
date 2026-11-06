@@ -1,10 +1,10 @@
 """用户业务逻辑：所有对 users 表的读写都收在这里。
 
 为什么要有这一层：
-    路由层只负责 HTTP（收参数、返响应），不碰 Session、不写 SQL；
-    事务边界放在这里——一个函数就是一个工作单元，成功 commit，失败 rollback。
+    路由层只负责 HTTP（收参数、返响应）,不碰 Session、不写 SQL；
+    事务边界放在这里——一个函数就是一个工作单元,成功 commit,失败 rollback。
 
-调用方只需要知道"做什么"，不需要知道"怎么查、怎么提交"。
+调用方只需要知道"做什么",不需要知道"怎么查、怎么提交"。
 """
 
 from decimal import Decimal
@@ -44,13 +44,13 @@ def get_user(db: Session, user_id: int) -> User:
 
 
 def list_users(db: Session, page: int = 1, size: int = 10) -> tuple[list[User], int]:
-    """分页查询，返回 (当页数据, 总数)。默认只返回未删除的用户。"""
+    """分页查询,返回 (当页数据, 总数)。默认只返回未删除的用户。"""
     total = db.scalar(
         select(func.count()).select_from(User).where(User.is_deleted == 0)
     ) or 0
     stmt = (
         select(User)
-        .where(User.is_deleted == 0)      # 💡 软删的过滤集中在这里，路由层不用管
+        .where(User.is_deleted == 0)      # 💡 软删的过滤集中在这里,路由层不用管
         .order_by(User.id.desc())
         .offset((page - 1) * size)
         .limit(size)
@@ -59,16 +59,16 @@ def list_users(db: Session, page: int = 1, size: int = 10) -> tuple[list[User], 
 
 
 def update_balance(db: Session, user_id: int, amount: Decimal) -> User:
-    """把余额调整 amount（可正可负），返回更新后的用户。"""
+    """把余额调整 amount（可正可负）,返回更新后的用户。"""
     user = get_user(db, user_id)
-    user.balance = user.balance + amount       # 💡 改属性即可，脏检查负责生成 UPDATE
+    user.balance = user.balance + amount       # 💡 改属性即可,脏检查负责生成 UPDATE
     db.commit()
     db.refresh(user)
     return user
 
 
 def soft_delete(db: Session, user_id: int) -> User:
-    """软删除：只把 is_deleted 置 1，行还在，可以恢复。"""
+    """软删除：只把 is_deleted 置 1,行还在,可以恢复。"""
     user = get_user(db, user_id)
     user.is_deleted = 1
     db.commit()
@@ -77,7 +77,7 @@ def soft_delete(db: Session, user_id: int) -> User:
 
 
 def hard_delete(db: Session, user_id: int) -> None:
-    """硬删除：真删。⚠️ 不可恢复，只用于确实不要的数据。"""
+    """硬删除：真删。⚠️ 不可恢复,只用于确实不要的数据。"""
     user = get_user(db, user_id)
     db.delete(user)
     db.commit()

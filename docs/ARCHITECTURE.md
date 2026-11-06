@@ -1,7 +1,7 @@
 # 项目架构
 
 > 更新时间：2026-11-04 · 章节结构改为 `chapters/chNN/{notes,code}`
-> 说明：`app/` 是作品集（第 4 章起长业务代码），`chapters/` 是学习轨迹，两者互不 import。
+> 说明：`app/` 是作品集（第 4 章起长业务代码）,`chapters/` 是学习轨迹,两者互不 import。
 
 ## 1. 全貌
 
@@ -31,7 +31,7 @@
 
 ## 2. 应用分层（app/）
 
-调用方向**单向向下**，反向依赖视为设计错误。
+调用方向**单向向下**,反向依赖视为设计错误。
 
 ```plain
                         客户端（curl / Swagger UI / 前端）
@@ -56,7 +56,7 @@
         └───────────────────────────┬───────────────────────────┘
                                     ▼
         ┌───────────────────────────────────────────────────────┐
-        │  app/services/*         ❌ 空，待第四章填充            │
+        │  app/services/*         ❌ 空,待第四章填充            │
         │    业务规则 · 事务边界 · 抛 AppError                   │
         └───────────────────────────┬───────────────────────────┘
                                     ▼
@@ -74,43 +74,43 @@
                               MySQL 8.0.42
 ```
 
-**旁路依赖**（不是调用链，是横切关注点）：
+**旁路依赖**（不是调用链,是横切关注点）：
 
 | 模块 | 谁在用 | 作用 |
 | --- | --- | --- |
-| `app/core/config.py` | `db/engine.py` | 读 `.env`，输出连接串与池参数 |
+| `app/core/config.py` | `db/engine.py` | 读 `.env`,输出连接串与池参数 |
 | `app/core/exceptions.py` | `services/`（未来）、`main.py` | 业务异常定义 → 统一 HTTP 映射 |
-| `app/deps.py` | `routers/` | 依赖出口，隔离 router 与 db |
+| `app/deps.py` | `routers/` | 依赖出口,隔离 router 与 db |
 
 ## 3. 一次 `/health/db` 请求的完整链路
 
 ```plain
 ① 客户端 GET /health/db
         │
-②      ▼  uvicorn 收到请求，交给 FastAPI
+②      ▼  uvicorn 收到请求,交给 FastAPI
         │
 ③      ▼  app/main.py 路由匹配 → health 路由
         │
 ④      ▼  app/routers/health.py::health_db(db: Session = Depends(get_db))
-        │     FastAPI 解析 Depends，调用 get_db()
+        │     FastAPI 解析 Depends,调用 get_db()
         │
 ⑤      ▼  app/deps.py → app/db/session.py::get_db()
         │     SessionLocal() 从连接池取一条连接
         │
-⑥      ▼  app/db/engine.py::engine（QueuePool，pool_pre_ping=True）
+⑥      ▼  app/db/engine.py::engine（QueuePool,pool_pre_ping=True）
         │
 ⑦      ▼  SQLAlchemy → PyMySQL → TCP 3306
         │
 ⑧      ▼  MySQL 执行 SELECT VERSION()
         │
-⑨      ▼  结果逐层返回，finally 中 db.close() 把连接还给池
+⑨      ▼  结果逐层返回,finally 中 db.close() 把连接还给池
         │
 ⑩      ▼  JSONResponse {"status": "ok", "mysql_version": "8.0.42"}
 ```
 
 ## 4. 两条数据访问路径
 
-仓库里同时存在两套访问方式，这是刻意的：`chapters/*/code/` 用裸驱动理解原理，`app/` 用 ORM 做工程。
+仓库里同时存在两套访问方式,这是刻意的：`chapters/*/code/` 用裸驱动理解原理,`app/` 用 ORM 做工程。
 
 | 维度 | practice 路径 | app 路径 |
 | --- | --- | --- |
@@ -120,7 +120,7 @@
 | 事务 | `conn.commit()` / `rollback()` | `Session.commit()` / `rollback()` |
 | 代表文件 | `chapters/ch02/code/pool.py` | `app/db/engine.py` |
 
-第二章的结论在这里直接复用：**`close()` 在池化语境下是归还，不是断开**。SQLAlchemy 的 `Session.close()` 同理，归还连接但不销毁池。
+第二章的结论在这里直接复用：**`close()` 在池化语境下是归还,不是断开**。SQLAlchemy 的 `Session.close()` 同理,归还连接但不销毁池。
 
 ## 5. 数据库现状
 
@@ -215,10 +215,10 @@ flowchart LR
 
 ```plain
 第一章 ✅ ──► 第二章 ✅ ──► 第三章 ✅：models/user.py + Alembic 基线 0001_initial
-                            ──► 第四章 ✅：services/user_service.py，用户 CRUD
+                            ──► 第四章 ✅：services/user_service.py,用户 CRUD
                             ──► 第五章 ✅：relationship（Order/Role）+ 迁移 0002
-                            ──► 第六章 ✅：schemas + routers/users.py，5 个接口
+                            ──► 第六章 ✅：schemas + routers/users.py,5 个接口
                             ──► 第七章：认证、测试、完整项目收口
 ```
 
-`app/` 当前是一个**能提供完整用户 API 的应用**：`/users` 的增删改查、分页、参数校验、异常映射都已经跑通，`alembic check` 与库结构一致。还缺认证（登录/密码哈希）、权限校验和自动化测试——那是第七章的事。
+`app/` 当前是一个**能提供完整用户 API 的应用**：`/users` 的增删改查、分页、参数校验、异常映射都已经跑通,`alembic check` 与库结构一致。还缺认证（登录/密码哈希）、权限校验和自动化测试——那是第七章的事。

@@ -2,7 +2,7 @@
 
 学到什么：
     relationship 让你从对象直接走到关联对象：user.orders 是一组 Order。
-    默认是「懒加载」：访问 user.orders 的那一刻才发 SELECT，不是查 User 时一起查。
+    默认是「懒加载」：访问 user.orders 的那一刻才发 SELECT,不是查 User 时一起查。
 
 怎么跑：
     export MYSQL_PASSWORD=你的密码
@@ -59,16 +59,16 @@ if __name__ == "__main__":
         print("    它的用户:", order.user.username)
         take_sql()
 
-        show("④ 用 SQL 直接做关联查询（join），一次拿完")
+        show("④ 用 SQL 直接做关联查询（join）,一次拿完")
         rows = db.execute(
             select(User.username, Order.order_no, Order.total_amount)
-            .join(Order, Order.user_id == User.id)     # ⚠️ 没有物理外键，join 条件要自己写
+            .join(Order, Order.user_id == User.id)     # ⚠️ 没有物理外键,join 条件要自己写
             .order_by(Order.id)
         ).all()
         for name, no, amount in rows:
             print(f"    {name:<6} {no:<8} {amount}")
 
-        show("⑤ 给某个用户加一张订单（走关系，不用手写 user_id）")
+        show("⑤ 给某个用户加一张订单（走关系,不用手写 user_id）")
         new_order = Order(order_no="ORD900", total_amount=88)
         user.orders.append(new_order)          # 💡 由关系自动填 user_id
         db.commit()
@@ -79,5 +79,5 @@ if __name__ == "__main__":
         show("⑥ 清理本次测试订单")
         db.delete(db.get(Order, new_order.id))
         db.commit()
-        db.expire_all()                        # 丢掉缓存，重新从库里读
-        print("    已清理，订单数恢复:", len(db.get(User, 1).orders))
+        db.expire_all()                        # 丢掉缓存,重新从库里读
+        print("    已清理,订单数恢复:", len(db.get(User, 1).orders))

@@ -1,4 +1,4 @@
-"""业务异常。service 层抛出，由全局处理器统一转成 HTTP 响应。"""
+"""业务异常。service 层抛出,由全局处理器统一转成 HTTP 响应。"""
 
 
 class AppError(Exception):

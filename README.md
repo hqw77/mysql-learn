@@ -2,11 +2,11 @@
 
 Python + MySQL 进阶实战学习仓库。
 
-从写第一句 `SELECT` 开始，一路走到 SQLAlchemy ORM + FastAPI 分层应用。每一章都留下三样东西：**可运行的代码**、**能复现的实验数据**、**自己整理过的笔记**。
+从写第一句 `SELECT` 开始,一路走到 SQLAlchemy ORM + FastAPI 分层应用。每一章都留下三样东西：**可运行的代码**、**能复现的实验数据**、**自己整理过的笔记**。
 
 ## 仓库怎么组织
 
-每章一个父目录，**笔记和代码分开**：
+每章一个父目录,**笔记和代码分开**：
 
 ```plain
 chapters/ch01/
@@ -16,10 +16,10 @@ chapters/ch01/
 
 | 层 | 目录 | 是什么 | 现在到哪 |
 | --- | --- | --- | --- |
-| 章节包 | `chapters/chNN/` | 每章一个，内含 `notes/` 与 `code/` | 第一 ~ 三章 |
+| 章节包 | `chapters/chNN/` | 每章一个,内含 `notes/` 与 `code/` | 第一 ~ 三章 |
 | 作品集 | `app/` | 最终要交付的 FastAPI 项目 | 已能提供完整用户 API |
 
-> `app/` 不再是空壳：第三章搭骨架，第四~六章陆续长出了 services、models（关系）、schemas 和 routers。
+> `app/` 不再是空壳：第三章搭骨架,第四~六章陆续长出了 services、models（关系）、schemas 和 routers。
 
 ## 学习进度
 
@@ -67,7 +67,7 @@ mysql-learning/
 │   ├── main.py                   # 入口：路由注册、异常处理、生命周期
 │   ├── deps.py                   # 依赖注入出口（get_db）
 │   ├── core/
-│   │   ├── config.py             # 配置，读 .env
+│   │   ├── config.py             # 配置,读 .env
 │   │   └── exceptions.py         # 业务异常 → HTTP 状态码
 │   ├── db/
 │   │   ├── base.py               # DeclarativeBase
@@ -80,7 +80,7 @@ mysql-learning/
 │       ├── health.py             # /health、/health/db
 │       └── users.py              # /users 五个接口
 ├── migrations/                   # Alembic 迁移
-│   ├── env.py                    # 从 .env 取连接串，include_object 防误删
+│   ├── env.py                    # 从 .env 取连接串,include_object 防误删
 │   └── versions/
 │       ├── 0001_initial_schema.py
 │       └── 0002_add_roles.py     # 第五章：roles + user_roles
@@ -90,7 +90,7 @@ mysql-learning/
 └── requirements.txt
 ```
 
-> `app/schemas/`、`app/services/`、`tests/` 在第四章开工时再建，现在不占位——空目录只会让人以为废弃了。
+> `app/schemas/`、`app/services/`、`tests/` 在第四章开工时再建,现在不占位——空目录只会让人以为废弃了。
 
 ## 快速开始
 
@@ -108,16 +108,16 @@ source .venv/Scripts/activate          # Windows CMD/PowerShell 用 .venv\Script
 pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
-> 国内网络直连 PyPI 经常卡住，加 `-i` 换清华镜像。
+> 国内网络直连 PyPI 经常卡住,加 `-i` 换清华镜像。
 
 ### 3. 配置数据库
 
 ```bash
 cp .env.example .env
-# 编辑 .env，填入真实密码
+# 编辑 .env,填入真实密码
 ```
 
-`.env` 已被 `.gitignore` 忽略，不会提交。**仓库内不含任何密码。**
+`.env` 已被 `.gitignore` 忽略,不会提交。**仓库内不含任何密码。**
 
 ### 4. 启动应用
 
@@ -129,7 +129,7 @@ uvicorn app.main:app --reload
 | --- | --- |
 | http://127.0.0.1:8000/docs | Swagger 接口文档 |
 | http://127.0.0.1:8000/health | 进程存活探测（不碰数据库） |
-| http://127.0.0.1:8000/health/db | 数据库连通探测，返回 MySQL 版本 |
+| http://127.0.0.1:8000/health/db | 数据库连通探测,返回 MySQL 版本 |
 
 ## 应用分层
 
@@ -193,7 +193,7 @@ uvicorn app.main:app --reload
 
 ## 数据库迁移
 
-表结构变更一律走 Alembic，不要用 `Base.metadata.create_all`。完整讲解见 [番外01](chapters/extras/notes/01-Alembic%20数据库迁移.md)。
+表结构变更一律走 Alembic,不要用 `Base.metadata.create_all`。完整讲解见 [番外01](chapters/extras/notes/01-Alembic%20数据库迁移.md)。
 
 ```bash
 alembic current                          # 当前版本
@@ -203,12 +203,12 @@ alembic upgrade head                     # 应用迁移
 alembic downgrade -1                     # 回退一步
 ```
 
-> 注意：库里有第一章遗留的练习表（`students`/`books`/`orders`…），它们没有对应的 ORM 模型。
-> `migrations/env.py` 里的 `include_object` 会把这些表排除在外，防止 autogenerate 生成 `DROP TABLE`。
+> 注意：库里有第一章遗留的练习表（`students`/`books`/`orders`…）,它们没有对应的 ORM 模型。
+> `migrations/env.py` 里的 `include_object` 会把这些表排除在外,防止 autogenerate 生成 `DROP TABLE`。
 
 ## 练习代码怎么跑
 
-所有 `chapters/*/code/` 下的脚本都通过环境变量读连接信息，先设置密码：
+所有 `chapters/*/code/` 下的脚本都通过环境变量读连接信息,先设置密码：
 
 ```bash
 export MYSQL_PASSWORD=你的密码
@@ -225,16 +225,16 @@ export MYSQL_PASSWORD=你的密码
 | `python chapters/ch01/code/phase5/test_explain.py` | EXPLAIN 前后对比索引效果 |
 | `python chapters/ch01/code/phase6/design_check.py` | 查看当前库的表结构 |
 | `python chapters/ch02/code/legacy/demo-user-manager-sys.py` | 裸连接版用户管理（改造前） |
-| `python chapters/ch02/code/01_pool_basic.py` | 案例1：借还一条连接，看连接是否复用 |
+| `python chapters/ch02/code/01_pool_basic.py` | 案例1：借还一条连接,看连接是否复用 |
 | `python chapters/ch02/code/02_benchmark.py` | 案例2：裸连接 vs 连接池压测 |
-| `python chapters/ch03/code/01_first_query.py` | 案例1：最小闭环，用 ORM 查出第一条数据 |
+| `python chapters/ch03/code/01_first_query.py` | 案例1：最小闭环,用 ORM 查出第一条数据 |
 | `python chapters/ch03/code/02_pymysql_vs_orm.py` | 案例2：PyMySQL 拿字典 vs ORM 拿对象 |
-| `python chapters/ch03/code/03_dirty_check.py` | 案例3：脏检查，验证什么时候才发 UPDATE |
-| `python chapters/ch03/code/04_use_app_model.py` | 案例4：工程版模型，和脚本版只差一个 import |
+| `python chapters/ch03/code/03_dirty_check.py` | 案例3：脏检查,验证什么时候才发 UPDATE |
+| `python chapters/ch03/code/04_use_app_model.py` | 案例4：工程版模型,和脚本版只差一个 import |
 | `python chapters/ch04/code/01_add.py` | 案例1：新增与唯一键冲突 |
 | `python chapters/ch04/code/02_query.py` | 案例2：条件查询与分页 |
-| `python chapters/ch04/code/03_update_delete.py` | 案例3：改的两种写法，软删 vs 硬删 |
-| `python chapters/ch04/code/04_batch_and_service.py` | 案例4：批量写入 12.9 倍差距，service 分层 |
+| `python chapters/ch04/code/03_update_delete.py` | 案例3：改的两种写法,软删 vs 硬删 |
+| `python chapters/ch04/code/04_batch_and_service.py` | 案例4：批量写入 12.9 倍差距,service 分层 |
 | `python chapters/ch05/code/01_relationship.py` | 案例1：一对多与懒加载时机 |
 | `python chapters/ch05/code/02_many_to_many.py` | 案例2：多对多与中间表 |
 | `python chapters/ch05/code/03_nplus1.py` | 案例3：N+1 实测（4 条 vs 2 条 SQL） |
@@ -267,18 +267,18 @@ export MYSQL_PASSWORD=你的密码
 
 ## 约定
 
-- **密码一律走环境变量 / `.env`**，代码里不出现明文。
+- **密码一律走环境变量 / `.env`**,代码里不出现明文。
 - `.env`、`.venv/`、`__pycache__/` 均已加入 `.gitignore`。
-- 每章一个目录：`chapters/chNN/`，里面 `notes/` 只放 `.md`，`code/` 只放 `.py`。
-- 应用代码与学习代码分离：`app/` 是作品集，`chapters/` 是学习轨迹，两者不互相 import。
-- 目录只在有内容时才建，不留空包。
+- 每章一个目录：`chapters/chNN/`,里面 `notes/` 只放 `.md`,`code/` 只放 `.py`。
+- 应用代码与学习代码分离：`app/` 是作品集,`chapters/` 是学习轨迹,两者不互相 import。
+- 目录只在有内容时才建,不留空包。
 
 ## 常见问题
 
 | 现象 | 原因 / 解决 |
 | --- | --- |
-| `mysql: command not found` | PATH 没生效，重启 VSCode 让新环境变量生效 |
-| `detected dubious ownership` | 目录属主与当前用户不一致，执行 `git config --global --add safe.directory 仓库路径` |
+| `mysql: command not found` | PATH 没生效,重启 VSCode 让新环境变量生效 |
+| `detected dubious ownership` | 目录属主与当前用户不一致,执行 `git config --global --add safe.directory 仓库路径` |
 | `pip install` 卡住 | 加 `-i https://pypi.tuna.tsinghua.edu.cn/simple` |
 | `Access denied for user 'root'` | `.env` 里的 `MYSQL_PASSWORD` 不对 |
-| `Lost connection to MySQL server` | 连接被 `wait_timeout` 断开，连接池设 `ping=1` |
+| `Lost connection to MySQL server` | 连接被 `wait_timeout` 断开,连接池设 `ping=1` |

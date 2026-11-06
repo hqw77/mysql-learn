@@ -1,8 +1,8 @@
 """第五章 · 案例 2：多对多 —— 用户和角色。
 
 学到什么：
-    多对多必须靠中间表（user_roles）。ORM 用 secondary= 指定中间表，
-    然后就能直接 user.roles.append(role) / remove(role)，中间表自动维护。
+    多对多必须靠中间表（user_roles）。ORM 用 secondary= 指定中间表,
+    然后就能直接 user.roles.append(role) / remove(role),中间表自动维护。
 
 怎么跑：
     export MYSQL_PASSWORD=你的密码
@@ -54,7 +54,7 @@ if __name__ == "__main__":
         for row in rows:
             print("    user_id =", row.user_id, " role_id =", row.role_id)
 
-        show("⑥ 清理：把本次加的关联删掉，库恢复原样")
+        show("⑥ 清理：把本次加的关联删掉,库恢复原样")
         db.execute(delete(user_roles).where(user_roles.c.user_id == 1))
         db.commit()
         print("    已清理")

@@ -1,8 +1,8 @@
-"""案例 2：同一件事，PyMySQL 和 ORM 各写一遍。
+"""案例 2：同一件事,PyMySQL 和 ORM 各写一遍。
 
 学到什么：
     「发 SQL 拿字典」和「拿对象」到底差在哪。
-    答案不在写法，在拿到的东西：一个是 dict，一个是带类型的对象。
+    答案不在写法,在拿到的东西：一个是 dict,一个是带类型的对象。
 
 怎么跑：
     export MYSQL_PASSWORD=你的密码
@@ -54,7 +54,7 @@ class User(Base):
 
 if __name__ == "__main__":
     print("=" * 62)
-    print("【A】PyMySQL：自己写 SQL，拿回字典")
+    print("【A】PyMySQL：自己写 SQL,拿回字典")
     print("=" * 62)
     conn = pymysql.connect(**DB)
     try:
@@ -65,21 +65,21 @@ if __name__ == "__main__":
         print("返回类型  :", type(row).__name__)
         print("内容      :", row)
         print("怎么取值  : row['username'] =", row["username"])
-        print("有没有补全: 没有，键名写错要到运行时才报 KeyError")
+        print("有没有补全: 没有,键名写错要到运行时才报 KeyError")
     finally:
         conn.close()
 
     print()
     print("=" * 62)
-    print("【B】ORM：不写 SQL，拿回对象")
+    print("【B】ORM：不写 SQL,拿回对象")
     print("=" * 62)
     with Session(engine) as session:
         user = session.get(User, 1)
-        print("SQL       : 由 ORM 生成，你看不到（echo=True 可以看到）")
+        print("SQL       : 由 ORM 生成,你看不到（echo=True 可以看到）")
         print("返回类型  :", type(user).__name__)
         print("内容      :", user)
         print("怎么取值  : user.username =", user.username)
-        print("有没有补全: 有，IDE 能提示 User 的所有属性")
+        print("有没有补全: 有,IDE 能提示 User 的所有属性")
 
     print()
     print("=" * 62)

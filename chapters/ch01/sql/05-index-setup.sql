@@ -13,7 +13,7 @@ CREATE TABLE big_users (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
 
--- 用代码快速插入 10 万条数据（通过 MySQL 的存储过程/循环，或者多行插入）
+-- 用代码快速插入 10 万条数据（通过 MySQL 的存储过程/循环,或者多行插入）
 -- 这里用纯 SQL 快速生成
 INSERT INTO
     big_users (username, email, age, city)

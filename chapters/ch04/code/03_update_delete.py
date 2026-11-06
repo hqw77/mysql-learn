@@ -1,9 +1,9 @@
-"""第四章 · 案例 3：改数据的两写法，删数据的两种取舍。
+"""第四章 · 案例 3：改数据的两写法,删数据的两种取舍。
 
 学到什么：
-    改单个对象 → 直接改属性，脏检查生成 UPDATE；
-    批量改 → 用 update() 语句，一条 SQL 改一批；
-    删数据 → 软删（is_deleted=1）保留行，硬删（DELETE）不可恢复。
+    改单个对象 → 直接改属性,脏检查生成 UPDATE；
+    批量改 → 用 update() 语句,一条 SQL 改一批；
+    删数据 → 软删（is_deleted=1）保留行,硬删（DELETE）不可恢复。
 
 怎么跑：
     export MYSQL_PASSWORD=你的密码
@@ -57,7 +57,7 @@ if __name__ == "__main__":
         for u in users:
             print("   ", u)
 
-        show("② 改单个对象：只改属性，commit 时发 UPDATE")
+        show("② 改单个对象：只改属性,commit 时发 UPDATE")
         target = users[0]
         target.balance = Decimal("888.00")
         db.commit()
@@ -74,13 +74,13 @@ if __name__ == "__main__":
             print("    SQL:", s)
         print("    影响行数:", result.rowcount)
 
-        show("④ 软删除：行还在，只是标记")
+        show("④ 软删除：行还在,只是标记")
         victim = users[1]
         victim.is_deleted = 1
         db.commit()
         take_sql()
         still_there = db.get(User, victim.id)
-        print(f"    is_deleted = {still_there.is_deleted}，行仍然存在：{still_there}")
+        print(f"    is_deleted = {still_there.is_deleted},行仍然存在：{still_there}")
         print("    业务查询要自己过滤：WHERE is_deleted = 0")
 
         show("⑤ 硬删除：真的没了")

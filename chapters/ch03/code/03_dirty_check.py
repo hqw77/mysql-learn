@@ -1,16 +1,16 @@
 """案例 3：脏检查 —— 改属性到底什么时候才发 UPDATE。
 
 学到什么：
-    1. 改属性只打标记，不发 SQL
-    2. 赋相同的值，flush 时不会生成 UPDATE
-    3. 赋不同的值，UPDATE 只带变化的那一列
+    1. 改属性只打标记,不发 SQL
+    2. 赋相同的值,flush 时不会生成 UPDATE
+    3. 赋不同的值,UPDATE 只带变化的那一列
     4. rollback 会把内存里的修改一起丢掉
 
 怎么跑：
     export MYSQL_PASSWORD=你的密码
     python chapters/ch03/code/03_dirty_check.py
 
-注意：全程不 commit，最后 rollback，不会改坏你的数据。
+注意：全程不 commit,最后 rollback,不会改坏你的数据。
 """
 
 import os
@@ -70,7 +70,7 @@ if __name__ == "__main__":
         print(f"    balance = {user.balance}")
         print(f"    session.dirty = {session.dirty}")
 
-        show("② 赋一个相同的值，然后 flush")
+        show("② 赋一个相同的值,然后 flush")
         user.username = user.username
         print(f"    session.dirty = {session.dirty}   ← 对象进去了")
         session.flush()
@@ -78,12 +78,12 @@ if __name__ == "__main__":
         print(f"    实际发出去的 SQL：{sqls if sqls else '（没有 UPDATE）'}")
         print("    结论：进了 dirty 集合 ≠ 一定会发 UPDATE")
 
-        show("③ 赋一个不同的值，然后 flush")
+        show("③ 赋一个不同的值,然后 flush")
         user.balance = Decimal("777.00")
         session.flush()
         for s in take_sql():
             print("    SQL:", s)
-        print("    结论：只 UPDATE 变化的那一列，不是整行覆盖")
+        print("    结论：只 UPDATE 变化的那一列,不是整行覆盖")
 
         show("④ rollback 把内存修改一起丢弃")
         print(f"    回滚前（内存里）：{user.balance}")

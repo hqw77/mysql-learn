@@ -16,4 +16,4 @@ GROUP BY
     u.username
 HAVING
     total_spent > 500;
--- 这里只能用 HAVING，不能用 WHERE
+-- 这里只能用 HAVING,不能用 WHERE

@@ -3,7 +3,7 @@ import os
 import pymysql
 from pymysql.cursors import DictCursor
 
-# 1. 建立数据库连接（密码从环境变量读取，不要把密码写进代码）
+# 1. 建立数据库连接（密码从环境变量读取,不要把密码写进代码）
 def get_conn():
     return pymysql.connect(
         host=os.getenv("MYSQL_HOST", "localhost"),
@@ -26,7 +26,7 @@ def show_menu():
 def main():
     conn = get_conn()
     
-    # 使用 DictCursor，让查询结果变成字典
+    # 使用 DictCursor,让查询结果变成字典
     with conn.cursor(cursor=DictCursor) as cur:
         
         while True:
@@ -44,7 +44,7 @@ def main():
                     age = int(input("请输入学生年龄: "))
                     score = float(input("请输入学生分数: "))
                 except ValueError:
-                    print("❌ 年龄必须是整数，分数必须是数字！录入取消。")
+                    print("❌ 年龄必须是整数,分数必须是数字！录入取消。")
                     continue
 
                 # 使用 %s 占位符防止 SQL 注入
@@ -62,11 +62,11 @@ def main():
                     print("📭 当前系统里没有学生数据。")
                 else:
                     print("\n" + "-"*45)
-                    # 使用 f-string 对齐打印，<4 表示左对齐占4位
+                    # 使用 f-string 对齐打印,<4 表示左对齐占4位
                     print(f"{'ID':<4} | {'姓名':<10} | {'年龄':<4} | {'分数':<6}")
                     print("-" * 45)
                     for stu in students:
-                        # 因为用了 DictCursor，可以用 stu['name'] 这样取值
+                        # 因为用了 DictCursor,可以用 stu['name'] 这样取值
                         print(f"{stu['id']:<4} | {stu['name']:<10} | {stu['age']:<6} | {stu['score']:<8}")
                     print("-" * 45)
 
@@ -92,7 +92,7 @@ def main():
             elif choice == '4':
                 name = input("请输入要删除的学生姓名: ").strip()
                 
-                # 先查一下有没有这个人，避免误删或删空
+                # 先查一下有没有这个人,避免误删或删空
                 cur.execute("SELECT id FROM students WHERE name = %s", (name,))
                 if not cur.fetchone():
                     print(f"⚠️ 没有找到名叫 {name} 的学生。")
@@ -105,11 +105,11 @@ def main():
 
             # 5. 退出
             elif choice == '5':
-                print("👋 退出系统，再见！")
+                print("👋 退出系统,再见！")
                 break
             
             else:
-                print("❌ 无效的选择，请输入 1-5 之间的数字。")
+                print("❌ 无效的选择,请输入 1-5 之间的数字。")
 
     # 退出循环后关闭连接
     conn.close()

@@ -1,6 +1,6 @@
-"""第三章补充：同一个操作，用 SQL 写一遍、用 ORM 写一遍，并排对比。
+"""第三章补充：同一个操作,用 SQL 写一遍、用 ORM 写一遍,并排对比。
 
-这个脚本不教新东西，只做一件事：把你已经会的 SQL，和等价的 ORM 写法摆在一起看。
+这个脚本不教新东西,只做一件事：把你已经会的 SQL,和等价的 ORM 写法摆在一起看。
 
 怎么跑：
     export MYSQL_PASSWORD=你的密码
@@ -32,7 +32,7 @@ DB = {
 
 
 def sql_query(sql: str, params=None):
-    """用原生 SQL 查，返回字典列表。"""
+    """用原生 SQL 查,返回字典列表。"""
     conn = pymysql.connect(**DB)
     try:
         with conn.cursor(DictCursor) as cur:
@@ -64,7 +64,7 @@ if __name__ == "__main__":
         user = db.get(User, 1)
         print("  结果：", user)
         print("  类型：", type(user).__name__)
-    print("\n  → 拿到的东西不一样：一个是字典，一个是对象")
+    print("\n  → 拿到的东西不一样：一个是字典,一个是对象")
 
     # ---------------------------------------------------------------
     title("② 按条件查：SELECT ... WHERE balance > 200")
@@ -85,7 +85,7 @@ if __name__ == "__main__":
         ).all()
         for u in users:
             print(f"    {u.username}  {u.balance}")
-    print("\n  → 同样的查询，只是把 SQL 关键字换成了方法名")
+    print("\n  → 同样的查询,只是把 SQL 关键字换成了方法名")
     print("    WHERE → .where()   ORDER BY → .order_by()   SELECT → select()")
 
     # ---------------------------------------------------------------
@@ -107,7 +107,7 @@ if __name__ == "__main__":
 
     print("\n[SQL]")
     print("  UPDATE users SET balance = 999 WHERE id = 1")
-    print("  → 你要自己拼字符串，自己 commit，自己处理参数")
+    print("  → 你要自己拼字符串,自己 commit,自己处理参数")
 
     print("\n[ORM]")
     print("  user.balance = 999")
@@ -116,10 +116,10 @@ if __name__ == "__main__":
         u = db.get(User, 1)
         before = u.balance
         u.balance = Decimal("999.00")
-        print(f"  改完还没提交，内存里是 {u.balance}，数据库里还是 {before}")
+        print(f"  改完还没提交,内存里是 {u.balance},数据库里还是 {before}")
         db.rollback()
         print(f"  回滚后重新查：{db.get(User, 1).balance}")
-    print("\n  → 改属性不发 SQL，commit 才发；这就是第三章讲的脏检查")
+    print("\n  → 改属性不发 SQL,commit 才发；这就是第三章讲的脏检查")
 
     # ---------------------------------------------------------------
     title("⑤ 对照表：SQL 关键字 ↔ ORM 写法")
@@ -141,4 +141,4 @@ if __name__ == "__main__":
     for sql, orm in mapping:
         print(f"  {sql:<28}{orm}")
 
-    print("\n  一句话：ORM 没有发明新东西，它只是把 SQL 的关键字变成了方法名。")
+    print("\n  一句话：ORM 没有发明新东西,它只是把 SQL 的关键字变成了方法名。")

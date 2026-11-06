@@ -2,7 +2,7 @@
 
 学到什么：
     状态码不是随便定的：创建 201、冲突 409、删除 204、查不到 404。
-    业务异常在 service 抛，main 里的处理器统一转成 HTTP 响应。
+    业务异常在 service 抛,main 里的处理器统一转成 HTTP 响应。
 
 怎么跑：
     export MYSQL_PASSWORD=你的密码
@@ -16,7 +16,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
-warnings.filterwarnings("ignore")   # 屏蔽 TestClient 的依赖弃用提示，让输出干净
+warnings.filterwarnings("ignore")   # 屏蔽 TestClient 的依赖弃用提示,让输出干净
 
 from decimal import Decimal  # noqa: E402,F401
 
@@ -49,7 +49,7 @@ if __name__ == "__main__":
         r = client.post("/users", json={"username": username, "phone": f"136{STAMP:08d}"})
         print("    状态码:", r.status_code)
         print("    响应:", r.json())
-        print("    ← service 抛 ConflictError，main 转成 409")
+        print("    ← service 抛 ConflictError,main 转成 409")
 
         show("③ 入参不合法 → 422（还没进 service）")
         r = client.post("/users", json={"username": "x", "phone": "123"})
@@ -65,13 +65,13 @@ if __name__ == "__main__":
         r = client.delete(f"/users/{user_id}")
         print("    状态码:", r.status_code, " 响应体:", repr(r.text))
 
-        show("⑥ 删除后：列表里消失了，但详情还在")
+        show("⑥ 删除后：列表里消失了,但详情还在")
         r = client.get("/users", params={"size": 100})
         names = [i["username"] for i in r.json()["items"]]
         print(f"    列表里有它吗: {username in names}   ← list 过滤了 is_deleted")
         r = client.get(f"/users/{user_id}")
         print("    详情状态码:", r.status_code, " is_deleted =", r.json()["is_deleted"])
-        print("    ⚠️ 详情不过滤软删，这是产品决策，不是 bug")
+        print("    ⚠️ 详情不过滤软删,这是产品决策,不是 bug")
 
         show("⑦ 清理：真删掉这条测试数据")
         with SessionLocal() as db:

@@ -1,7 +1,7 @@
 """第六章 · 案例 2：用 TestClient 调自己的 API（读接口）。
 
 学到什么：
-    不用起 uvicorn，TestClient 直接把请求打进 FastAPI 应用，
+    不用起 uvicorn,TestClient 直接把请求打进 FastAPI 应用,
     这也是第七章写自动化测试的基础。
 
 怎么跑：
@@ -15,7 +15,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
-warnings.filterwarnings("ignore")   # 屏蔽 TestClient 的依赖弃用提示，让输出干净
+warnings.filterwarnings("ignore")   # 屏蔽 TestClient 的依赖弃用提示,让输出干净
 
 from fastapi.testclient import TestClient  # noqa: E402
 

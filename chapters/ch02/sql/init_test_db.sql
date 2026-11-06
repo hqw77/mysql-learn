@@ -7,7 +7,7 @@ USE test_db;
 
 -- ==========================================
 -- 2. 删除旧表（注意：会删除原有数据）
--- 按照外键依赖关系，先删除关联表
+-- 按照外键依赖关系,先删除关联表
 -- ==========================================
 DROP TABLE IF EXISTS orders;
 
@@ -26,7 +26,7 @@ CREATE TABLE user (
     password VARCHAR(255) NOT NULL COMMENT '密码哈希',
     email VARCHAR(100) NOT NULL COMMENT '邮箱',
     age TINYINT UNSIGNED DEFAULT NULL COMMENT '年龄',
-    status TINYINT NOT NULL DEFAULT 1 COMMENT '状态：1正常，0禁用',
+    status TINYINT NOT NULL DEFAULT 1 COMMENT '状态：1正常,0禁用',
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (id),
@@ -73,7 +73,7 @@ CREATE TABLE orders (
     user_id BIGINT UNSIGNED NOT NULL COMMENT '所属用户ID',
     order_no VARCHAR(64) NOT NULL COMMENT '订单编号',
     total_amount DECIMAL(10, 2) NOT NULL DEFAULT 0.00 COMMENT '订单金额',
-    status TINYINT NOT NULL DEFAULT 0 COMMENT '订单状态：0待支付，1已支付，2已取消，3已完成',
+    status TINYINT NOT NULL DEFAULT 0 COMMENT '订单状态：0待支付,1已支付,2已取消,3已完成',
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '下单时间',
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (id),

@@ -1,7 +1,7 @@
 """Role 模型 + user_roles 关联表 —— 演示「多对多」。
 
-多对多必须有一张中间表，存两边的 id。
-这里 user_roles 是新表，由 Alembic 迁移创建（见 migrations/versions/0002_*）。
+多对多必须有一张中间表,存两边的 id。
+这里 user_roles 是新表,由 Alembic 迁移创建（见 migrations/versions/0002_*）。
 """
 
 from datetime import datetime
@@ -12,7 +12,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
 
-# 中间表：只有两个外键，联合主键保证「同一个用户不会有同一个角色两次」
+# 中间表：只有两个外键,联合主键保证「同一个用户不会有同一个角色两次」
 user_roles = Table(
     "user_roles",
     Base.metadata,

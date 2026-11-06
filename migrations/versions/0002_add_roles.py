@@ -1,6 +1,6 @@
 """add roles and user_roles
 
-第五章产物：新增角色表和多对多关联表，并预置三个角色。
+第五章产物：新增角色表和多对多关联表,并预置三个角色。
 
 Revision ID: 0002_roles
 Revises: 0001_initial
@@ -42,13 +42,13 @@ def upgrade() -> None:
         mysql_charset="utf8mb4",
     )
 
-    # 预置角色，方便案例直接使用
+    # 预置角色,方便案例直接使用
     op.execute(
         sa.text(
             "INSERT INTO roles (name, description) VALUES "
-            "('admin', '管理员，可管理所有资源'), "
-            "('editor', '编辑，可改内容不能删用户'), "
-            "('viewer', '访客，只读')"
+            "('admin', '管理员,可管理所有资源'), "
+            "('editor', '编辑,可改内容不能删用户'), "
+            "('viewer', '访客,只读')"
         )
     )
 

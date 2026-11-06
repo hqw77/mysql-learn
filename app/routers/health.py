@@ -1,4 +1,4 @@
-"""系统探针。一个查进程，一个查数据库，用来验证分层是否打通。"""
+"""系统探针。一个查进程,一个查数据库,用来验证分层是否打通。"""
 
 from fastapi import APIRouter, Depends
 from sqlalchemy import text
@@ -11,7 +11,7 @@ router = APIRouter(tags=["system"])
 
 @router.get("/health")
 def health() -> dict[str, str]:
-    """进程存活探测：不碰数据库，纯内存返回。"""
+    """进程存活探测：不碰数据库,纯内存返回。"""
     return {"status": "ok"}
 
 

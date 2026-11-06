@@ -38,15 +38,15 @@ CREATE TABLE articles (
 CREATE TABLE article_tags (
     article_id BIGINT UNSIGNED NOT NULL,
     tag_id INT UNSIGNED NOT NULL,
-    PRIMARY KEY (article_id, tag_id) -- 联合主键，防止重复关联
+    PRIMARY KEY (article_id, tag_id) -- 联合主键,防止重复关联
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = '文章标签关联表';
 
--- 6. 评论表（自关联设计，支持回复功能）
+-- 6. 评论表（自关联设计,支持回复功能）
 CREATE TABLE comments (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     article_id BIGINT UNSIGNED NOT NULL,
     user_id BIGINT UNSIGNED NOT NULL,
-    parent_id BIGINT UNSIGNED DEFAULT NULL COMMENT '父评论ID，NULL表示一级评论',
+    parent_id BIGINT UNSIGNED DEFAULT NULL COMMENT '父评论ID,NULL表示一级评论',
     content VARCHAR(500) NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = '评论表';
