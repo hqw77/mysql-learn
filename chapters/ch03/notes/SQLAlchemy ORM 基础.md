@@ -1,194 +1,261 @@
-# 第三章 · SQLAlchemy ORM 基础
+# 第三章 · 从 SQL 到对象（大白话版）
 
-> **一句话**：ORM 就是把「发 SQL、拿字典、自己拼字符串」换成「拿对象、改属性、提交」。
-
-**学习方式**：本文分六块 —— 先讲知识（一），再给 4 个能跑的例子（二），然后是业务场景（三）、报错排查（四）、自测题（五）、总结与速查卡（六）。第一块读完就能跑案例 1，不用等全部读完。
-
-**分几次学**（不用一口气读完）：
-
-| 第几次 | 干什么 | 用时 | 读到哪 |
-| --- | --- | --- | --- |
-| 第 1 次 | 只读知识，不写代码 | 15 分钟 | 一、1.1 ~ 1.6 |
-| 第 2 次 | 跑 4 个案例 + 做「改一改」 | 20 分钟 | 二、案例 1 ~ 4 |
-| 第 3 次 | 看业务场景 + 自测 3 题 | 10 分钟 | 三、五 |
-| 以后 | 只翻章末速查卡 | 1 分钟 | 六、速查卡 |
+> 这一章只讲一件事：**以前你发 SQL 拿字典，现在你拿对象改属性。**
 
 ---
 
-# 一、这一章讲什么
+## 这一章涉及哪些知识点
 
-## 1.1 四个角色
+1. **四个角色**：Engine、Base、Model、Session 各是干什么的
+2. **Engine**：一根一直通着的水管
+3. **Base 和 Model**：上户口 + 表格模板
+4. **Session**：取号办事，办完走人
+5. **查第一条数据**：报个 id，直接拿到对象
+6. **脏检查**：改在草稿上，提交才存档
+
+每个知识点都是：**一句话结论 → 打个比方 → 看代码 → 记住一个坑**。
+
+---
+
+## 先看一张「比喻地图」
+
+| 你要干的事 | 生活里的比方 | 对应代码 |
+| --- | --- | --- |
+| 连上数据库 | 铺一根水管，一直通着 | `create_engine(url)` |
+| 告诉它有哪些表 | 上户口，登记一下 | `class Base(DeclarativeBase)` |
+| 描述一行数据的字段 | 设计一张表格模板 | `class User(Base)` + `mapped_column` |
+| 开一次操作 | 去银行取号，办完走人 | `Session(engine)` |
+| 查一条数据 | 报身份证号，直接调档 | `session.get(User, 1)` |
+| 改数据 | 在草稿上改字 | `user.balance = 100` |
+| 让改动生效 | 交表存档 | `commit()` |
+
+## 英文词小抄
+
+| 英文 | 中文 | 一句人话 |
+| --- | --- | --- |
+| `Engine` | 引擎 | 管理数据库连接的对象，全程序只建一个 |
+| `Base` | 基类 | 所有模型的共同父类，管着「有哪些表」 |
+| `Model` | 模型 | 一个类对应一张表，一个属性对应一列 |
+| `Session` | 会话 | 一次操作的工作台，办完要关 |
+| `DeclarativeBase` | 声明式基类 | SQLAlchemy 2.0 推荐的写法，直接用就行 |
+| `Mapped[int]` | 映射类型 | 告诉编辑器「这个属性是整数」 |
+| `mapped_column` | 映射列 | 定义这一列在数据库里长什么样 |
+| `commit` | 提交 | 把内存里的改动真正写进数据库 |
+| `rollback` | 回滚 | 反悔，撤销这次没提交的改动 |
+| `flush` | 刷写 | 把改动同步到数据库（还没提交） |
+| `dirty` | 脏 | 被改过但还没提交的对象 |
+
+---
+
+## 知识点 1：四个角色 —— 一家小公司
+
+**一句话**：操作数据库这件事，被拆成四个岗位，各干各的。
+
+**打个比方**
+
+把这套东西想成一家小公司：
+
+| 岗位 | 对应代码 | 干什么 |
+| --- | --- | --- |
+| 水管工 | **Engine** | 负责把水管（连接）铺到数据库，只铺一次 |
+| 户口本 | **Base** | 记录公司有哪些「表」，谁来都要登记 |
+| 表格模板 | **Model** | 定义每张表长什么样：有哪些字段、什么类型 |
+| 办事窗口 | **Session** | 你每次办事用的窗口，办完就走，不长期占着 |
+
+它们的位置关系：
 
 ```plain
-你的代码
-   │  user = session.get(User, 1)
-   ▼
-┌────────────┐
-│  Session   │  工作单元：管事务、管对象状态
-└─────┬──────┘
-      │ 要用连接时才借
-      ▼
-┌────────────┐
-│   Engine   │  进程级唯一，内部持有一个连接池
-└─────┬──────┘
-      │
-      ▼
-   PyMySQL → MySQL 8.0
+        你的代码
+           │
+           ▼
+   ┌───────────────┐
+   │    Session    │  办事窗口：一次业务的临时工作台
+   └───────┬───────┘
+           │ 要用连接时才去借
+           ▼
+   ┌───────────────┐
+   │    Engine     │  水管工：持有连接池，全程序一个
+   └───────┬───────┘
+           ▼
+        MySQL
 ```
 
-| 角色 | 一句话 | 建几个 |
-| --- | --- | --- |
-| Engine | 连接池的持有者 | 全进程 1 个 |
-| Base | 模型登记册 | 全进程 1 个 |
-| Model | 一个类 = 一张表 | 一张表 1 个 |
-| Session | 一次业务操作的工作单元 | 每次操作 1 个 |
-
-## 1.2 Engine：别每次请求都建
-
-`create_engine(url)` 是重对象，创建时会把整个连接池初始化好。写进函数体、每个请求建一次，是最常见的性能事故。
+**看代码**（20 行跑通，完整版见 `chapters/ch03/code/01_first_query.py`）
 
 ```python
-engine = create_engine(url, pool_pre_ping=True)  # 探活，解决 MySQL 8 小时断连
+from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
+
+engine = create_engine(url)          # ① 水管工
+class Base(DeclarativeBase):         # ② 户口本
+    pass
+class User(Base):                    # ③ 表格模板
+    __tablename__ = "users"
+with Session(engine) as session:     # ④ 办事窗口
+    ...
 ```
 
-> 💡 这一行能省掉一整类"服务空闲一夜，第二天第一个请求 500"的事故——它和第二章的 `ping=1` 是同一件事，只是换了个名字。
+**记住一个坑**
 
-> 🔗 想验证：**案例 1**（Engine 有没有真的建起来）
+**`create_engine` 只能建一次，别写在函数里。** 它一建就要初始化整个连接池，你每个请求建一次，等于每次都重新铺一遍水管。这是新手最常见的性能事故。
 
-连接池参数的细节在第二章讲过，这里只需要记住：**Engine 全进程建一次**。
+跑一遍：`python chapters/ch03/code/01_first_query.py`
 
-## 1.3 Base：模型必须被 import 才会注册
+---
+
+## 知识点 2：Engine —— 一根一直通着的水管
+
+**一句话**：Engine 就是那根通到数据库的水管，建一次，一直用。
+
+**打个比方**
+
+- 笨办法：每次洗手都重新铺一遍水管。
+- 正常办法：管子铺好一直通着，洗手、洗菜、冲马桶都用它。
+
+每次 `pymysql.connect()` 就是"重新铺管子"——要 TCP 握手、要认证、要初始化会话。第二章测过，建一次连接要 11 毫秒，而执行一条简单查询只要 0.5 毫秒。
+
+**看代码**
+
+```python
+engine = create_engine(
+    url,
+    pool_pre_ping=True,      # 借出前先探一下管子通不通
+    pool_recycle=3600,       # 管子用了一小时就换新的
+)
+```
+
+> 💡 `pool_pre_ping=True` 能省掉一整类事故：MySQL 默认 8 小时没动静就把连接掐了，第二天第一个请求拿到一根死管子。加上这个，借出前先试一下，断了自动重接。
+
+**记住一个坑**
+
+**Engine 要全局只有一个。** 在 `app/db/engine.py` 里建，别的地方 `from app.db.engine import engine` 拿来用，不要自己再 `create_engine` 一次。
+
+---
+
+## 知识点 3：Base 和 Model —— 上户口 + 表格模板
+
+**一句话**：Base 是户口本（记录有哪些表），Model 是表格模板（定义每张表长什么样）。
+
+**打个比方**
+
+- **Base**：公司的户口本。每张表都要在它那儿登记一次，不然公司不知道你存在。
+- **Model**：一张"人员登记表"的模板——姓名那一栏多宽、年龄是不是数字、入职时间能不能留空。
+
+**看代码**
 
 ```python
 class Base(DeclarativeBase):
     pass
+
+class User(Base):
+    __tablename__ = "users"                                      # 表名
+
+    id: Mapped[int] = mapped_column(INTEGER(unsigned=True), primary_key=True)
+    username: Mapped[str] = mapped_column(String(50))
+    balance: Mapped[Decimal] = mapped_column(Numeric(10, 2))
 ```
 
-它看着是空类，实际持有 `Base.metadata`——「本进程注册了哪些表」的登记表。每个子类自动登记。
+两个东西必须成对出现：
 
-⚠️ 写了 `app/models/order.py` 却没在任何地方 import，这张表就不在 `metadata` 里，迁移和建表都会漏掉它。所以 `app/models/__init__.py` 要把每个模型都 export 一次。
+| 写法 | 给谁看的 | 作用 |
+| --- | --- | --- |
+| `Mapped[int]` | 编辑器、类型检查 | 让 `user.id` 自动识别成整数 |
+| `mapped_column(...)` | 数据库 | 建表时变成 `INT UNSIGNED` |
 
-> 🔗 想验证：**案例 4**（`app/models/__init__.py` 是怎么 export 的）
+**类型怎么对应**
 
-## 1.4 Model：类型声明和列定义是两件事
+| Python 类型 | 写法 | 数据库里 |
+| --- | --- | --- |
+| `int` | `INTEGER(unsigned=True)` | `INT UNSIGNED` |
+| `str` | `String(50)` | `VARCHAR(50)` |
+| `Decimal` | `Numeric(10, 2)` | `DECIMAL(10,2)` |
+| `bool` | `TINYINT(1)` | `TINYINT(1)` |
+| `datetime` | `DateTime` | `DATETIME` |
 
-```python
-id: Mapped[int] = mapped_column(INTEGER(unsigned=True), primary_key=True)
-    └─ Python 侧 ─┘            └──── 数据库侧 ────┘
-```
+**`default` 和 `server_default` 的区别**
 
-- `Mapped[int]` 决定 `user.id` 是 `int`（给 IDE 和类型检查器看）
-- `mapped_column(...)` 决定建表时是 `INT UNSIGNED`（给数据库看）
-
-**类型对照**：
-
-| Python | SQLAlchemy | MySQL | 注意 |
-| --- | --- | --- | --- |
-| `int` | `INTEGER(unsigned=True)` | `INT UNSIGNED` | 必须从 `sqlalchemy.dialects.mysql` 导入 |
-| `str` | `String(50)` | `VARCHAR(50)` | 必须给长度 |
-| `Decimal` | `Numeric(10, 2)` | `DECIMAL(10,2)` | 金额只用它，不用 `Float` |
-| `bool` | `TINYINT(1)` | `TINYINT(1)` | 对应 `is_deleted` |
-| `datetime` | `DateTime` | `DATETIME` | 不带时区 |
-
-**`default` 和 `server_default` 的区别**（实测生成的建表语句）：
+一个进建表语句，一个不进：
 
 ```sql
 -- server_default=text("0.00")
-balance NUMERIC(10, 2) NOT NULL DEFAULT (0.00)    ← DDL 里有 DEFAULT
+balance NUMERIC(10, 2) NOT NULL DEFAULT (0.00)    ← 建表语句里有默认值
 
 -- default=Decimal("0.00")
-balance NUMERIC(10, 2) NOT NULL                    ← DDL 里什么都没有
+balance NUMERIC(10, 2) NOT NULL                    ← 建表语句里什么都没有
 ```
 
-想和数据库结构一致，用 `server_default`；`default` 只是 Python 侧兜底，不进表结构。
+想和数据库结构对齐，用 `server_default`。
 
-> 🔗 想验证：**案例 1**（`User` 模型怎么写）、**案例 2**（对象和字典差在哪）
+**记住一个坑**
 
-## 1.5 Session：不线程安全
+**模型没被 import，等于没上户口。** 你写了 `app/models/order.py`，但没有任何地方 import 它，`Base.metadata` 里就没有这张表——建表、迁移都会漏掉它。
+
+所以 `app/models/__init__.py` 里要把每个模型都 export 一次。
+
+---
+
+## 知识点 4：Session —— 取号办事，办完走人
+
+**一句话**：Session 是办事窗口，一次业务用一个，办完就关。
+
+**打个比方**
+
+去银行办事：
+
+1. 取号（`Session(engine)`）
+2. 办事（查、改、提交）
+3. 走人（`session.close()`）
+
+你不会在银行一直待着不走——那别人就进不来了。Session 也一样，用完要关，把连接还给池子。
+
+**看代码**
+
+```python
+with Session(engine) as session:      # 取号，自动处理关闭
+    user = session.get(User, 1)
+    print(user.username)
+# 出了 with，自动 close，连接还回池子
+```
+
+`with` 的意思是：不管中间成功还是报错，出来都帮你关掉。不用自己写 `try/finally`。
+
+**记住一个坑**
+
+**Session 不能跨线程共用。** 一个线程一个 Session，或者一个请求一个 Session。共享会出现很难查的数据错乱。
+
+---
+
+## 知识点 5：查第一条数据 —— 报个身份证号
+
+**一句话**：`session.get(User, 1)` 就是"报 id，直接调档"。
+
+**打个比方**
+
+你去档案馆说"我要 1 号档案"，管理员直接去那个位置拿给你。不用翻遍所有柜子。
+
+**看时序**
+
+```plain
+   session.get(User, 1)
+        │
+        ▼
+   生成 SQL：SELECT ... FROM users WHERE id = 1     ← 只有这时候碰数据库
+        │
+        ▼
+   返回一个 User 对象
+   （数据被"翻译"成对象：列名变成属性名）
+```
+
+**看代码**
 
 ```python
 with Session(engine) as session:
     user = session.get(User, 1)
+    print(user)              # <User id=1 username='张三' balance=888.00>
+    print(user.username)     # 张三
+    print(user.balance)      # 888.00
 ```
 
-一次业务操作一个 Session。它管三件事：事务边界、身份映射（同 id 查两次返回同一对象）、脏检查。
-
-⚠️ 别跨线程共享 Session。
-
-> 🔗 想验证：**案例 1**（`with Session(engine)` 的写法与关闭）
-
-## 1.6 脏检查：本章最反直觉的地方
-
-改了对象的属性，**不会立刻发 SQL**。SQLAlchemy 只把对象标记为「脏」，等 `commit()` / `flush()` 时才逐字段对比快照，决定写不写。
-
-两个反直觉的结论：
-
-1. 赋一个**相同**的值，对象进了 dirty 集合，但 flush 时不发 UPDATE
-2. 赋一个**不同**的值，UPDATE 只带变化的那一列，不是整行覆盖
-
-> 💡 记住这个顺序：**改属性 → 只打标记；commit → 对比快照 → 才发 SQL**。搞混这两步，就会误以为"我改了怎么没生效"或"我没改怎么被覆盖了"。
-
-这两条在案例 3 里可以亲眼看到。
-
-> 🔗 想验证：**案例 3**（用 `event` 抓真实 SQL，看它发不发 UPDATE）
-
----
-
-# 二、四个可执行案例
-
-| 案例 | 文件 | 验证什么 | 用时 |
-| --- | --- | --- | --- |
-| 1 | `01_first_query.py` | 最小闭环，查出第一条数据 | 3 分钟 |
-| 2 | `02_pymysql_vs_orm.py` | 字典 vs 对象，差别到底在哪 | 3 分钟 |
-| 3 | `03_dirty_check.py` | 脏检查与 UPDATE 触发条件 | 5 分钟 |
-| 4 | `04_use_app_model.py` | 脚本版 vs 工程版，只差一个 import | 3 分钟 |
-
-## 跑之前的准备
-
-所有案例都从环境变量读连接信息：
-
-```bash
-cd D:/github_repository/mysql-learning      # 必须在仓库根目录
-export MYSQL_PASSWORD=你的密码
-```
-
-> 案例 4 会 import `app` 包，所以必须在仓库根目录执行；其它三个在哪跑都行。
-
----
-
-## 案例 1 · 第一条查询
-
-> 🔗 对应知识点：**1.2 Engine · 1.3 Base · 1.4 Model · 1.5 Session**
-
-**验证什么**：Engine / Base / Model / Session 四个对象能不能串起来。
-
-**文件**：`chapters/ch03/code/01_first_query.py`
-
-**核心代码**（完整版见文件）：
-
-```python
-engine = create_engine(url)                 # ① 引擎
-
-class Base(DeclarativeBase):                # ② 登记册
-    pass
-
-class User(Base):                           # ③ 模型
-    __tablename__ = "users"
-    id: Mapped[int] = mapped_column(INTEGER(unsigned=True), primary_key=True)
-    username: Mapped[str] = mapped_column(String(50))
-    # ... 其余列
-
-with Session(engine) as session:            # ④ 工作单元
-    user = session.get(User, 1)
-```
-
-**怎么跑**：
-
-```bash
-python chapters/ch03/code/01_first_query.py
-```
-
-**你会看到**：
+真实运行结果：
 
 ```plain
 【1】按主键查一条
@@ -199,311 +266,143 @@ python chapters/ch03/code/01_first_query.py
 【2】查不到时返回什么
     session.get(User, 999999) -> None
     没有抛异常，只是 None
-
-【3】把整张表取回来（每行都是一个对象）
-    <User id=1 username='张三' balance=888.00>
-    <User id=2 username='李四' balance=400.00>
-    <User id=3 username='王五' balance=100.00>
 ```
 
-**能学到什么**：
+**记住一个坑**
 
-- `session.get()` 返回的是 **对象**，不是元组也不是字典
-- 查不到返回 `None`，**不抛异常**——所以判断"用户不存在"写 `if user is None` 就行
-- 一行数据被翻译成对象后，列名变成了属性名，IDE 能补全
-- `__repr__` 不是必须的，但没有它打印出来是 `<User object at 0x...>`，调试很痛苦
-
-**改一改**（1 分钟）：把 `session.get(User, 1)` 里的 1 改成 2，看输出变成谁；再改成 999999，确认拿到 `None` 而不是报错。
+**查不到返回 `None`，不报错。** 所以判断"用户不存在"就是 `if user is None`，不用 try/except。
 
 ---
 
-## 案例 2 · PyMySQL 和 ORM 的差别
+## 知识点 6：脏检查 —— 改草稿，提交才存档
 
-> 🔗 对应知识点：**1.1 四个角色**（同一件事的两种写法）
+**一句话**：改属性只是在草稿上改，`commit()` 才存档；而且只存改过的那一段。
 
-**验证什么**：同一行数据，两种写法拿回来的东西到底差在哪。
+**打个比方**
 
-**文件**：`chapters/ch03/code/02_pymysql_vs_orm.py`
+你在 Word 里改文档：
 
-**核心代码**：
+- 打字的时候，文件还是原来的，**没保存就不算数**；
+- 按 Ctrl+S 保存时，Word 只把**改过的段落**写进文件，不会把整篇重写一遍。
 
-```python
-# A. PyMySQL：自己写 SQL，拿回字典
-cur.execute("SELECT * FROM users WHERE id = %s", (1,))
-row = cur.fetchone()
-print(row["username"])
+SQLAlchemy 干的是同一件事。
 
-# B. ORM：不写 SQL，拿回对象
-user = session.get(User, 1)
-print(user.username)
-```
-
-**怎么跑**：
-
-```bash
-python chapters/ch03/code/02_pymysql_vs_orm.py
-```
-
-**你会看到**：
+**看时序**
 
 ```plain
-【A】PyMySQL
-返回类型  : dict
-内容      : {'id': 1, 'username': '张三', 'phone': '13800000001',
-             'balance': Decimal('888.00'), 'is_deleted': 0, ...}
-怎么取值  : row['username'] = 张三
-有没有补全: 没有，键名写错要到运行时才报 KeyError
-
-【B】ORM
-返回类型  : User
-内容      : <User id=1 username='张三' balance=888.00>
-怎么取值  : user.username = 张三
-有没有补全: 有，IDE 能提示 User 的所有属性
+   user.balance = 100
+        │
+        ▼
+   ① 只在内存里改，标记"这个对象脏了"        ← 此刻一条 SQL 都没发
+        │
+        ▼
+   session.commit()
+        │
+        ▼
+   ② 拿现在的值和"加载时的快照"逐个比对
+        │
+        ├── 没变 → 跳过，不发 SQL
+        └── 变了 → UPDATE，只带变化的那一列
 ```
 
-**能学到什么**：
-
-| 维度 | PyMySQL | ORM |
-| --- | --- | --- |
-| 数据载体 | `dict` | `User` 对象 |
-| 字段类型 | 运行时才知道 | 写代码时就知道 |
-| 改数据 | 自己拼 `UPDATE` | `user.balance = 100` |
-| 复杂查询 | 直接写，爽 | 要绕一层 |
-
-> ORM 替代的是**重复的样板 SQL**，不是复杂查询。报表、多表聚合照样手写。
-
-**改一改**（2 分钟）：在 `02_pymysql_vs_orm.py` 里给 User 加一个 `vip` 属性（用 `@property`，不是列），打印 `user.vip`，感受"对象能挂方法，字典不能"。
-
----
-
-## 案例 3 · 脏检查与 UPDATE 触发条件
-
-> 🔗 对应知识点：**1.6 脏检查**
-
-**验证什么**：改属性到底什么时候才真的写库。
-
-**文件**：`chapters/ch03/code/03_dirty_check.py`
-
-这个案例用 `event` 监听器把 ORM 实际发出的 SQL 抓了下来：
-
-```python
-@event.listens_for(engine, "before_cursor_execute")
-def _record(conn, cursor, statement, parameters, context, executemany):
-    _captured.append(" ".join(statement.split()))
-```
-
-**怎么跑**：
-
-```bash
-python chapters/ch03/code/03_dirty_check.py
-```
-
-> 全程不 commit，最后 rollback，**不会改坏你的数据**。
-
-**你会看到**：
+真实运行结果（案例 3 用事件监听抓的 SQL）：
 
 ```plain
---- ① 只是查询 ---
-    balance = 888.00
-    session.dirty = IdentitySet([])
-
 --- ② 赋一个相同的值，然后 flush ---
     session.dirty = IdentitySet([<User object at 0x...>])   ← 对象进去了
     实际发出去的 SQL：（没有 UPDATE）
-    结论：进了 dirty 集合 ≠ 一定会发 UPDATE
 
 --- ③ 赋一个不同的值，然后 flush ---
     SQL: UPDATE users SET balance=%(balance)s WHERE users.id = %(users_id)s
     结论：只 UPDATE 变化的那一列，不是整行覆盖
-
---- ④ rollback 把内存修改一起丢弃 ---
-    回滚前（内存里）：777.00
-    回滚后（重新查）：888.00
 ```
 
-**能学到什么**：
+两个反直觉的结论：
 
-- 改属性只是**打标记**，此刻数据库毫不知情
-- flush 时会对比属性快照，值没变就跳过
-- UPDATE 只带变化的列 → 多人改同一行不同字段不会互相覆盖
-- 但同一列的并发冲突，ORM 管不了，要靠乐观锁或 `SELECT ... FOR UPDATE`
-- `rollback()` 会连内存里的修改一起丢掉
+1. 赋**相同**的值，对象进了 dirty 集合，但**不发 UPDATE**——因为值没变；
+2. UPDATE **只带变的那一列**，不是整行覆盖。
 
-**改一改**（2 分钟）：把 ③ 里的 `777.00` 改成当前值（`888.00`），再跑一次——你会看到 SQL 变回"没有 UPDATE"，印证第 ② 步的结论。
+**记住一个坑**
+
+**别在循环里 `commit()`。** 每次 commit 都是一次网络往返。批量写 100 条，正确写法是 `add_all` 之后 commit 一次（第四章测过，差 12.9 倍）。
+
+跑一遍：`python chapters/ch03/code/03_dirty_check.py`
 
 ---
 
-## 案例 4 · 脚本版和工程版，只差一个 import
+## 面试常问的 3 个问题
 
-> 🔗 对应知识点：**1.2 Engine · 1.3 Base**（它们在 `app/` 里长什么样）
+### 1. Engine 和 Session 有什么区别？
 
-**验证什么**：`app/` 里的那份模型，用起来和案例 1 的本地模型有什么区别。
+> **一句话**：Engine 管连接，Session 管事务和对象。
+>
+> **展开**：
+> 1. 生命周期不同——Engine 是全局的，程序启动建一次；Session 是每次操作用的，用完就关；
+> 2. 职责不同——Engine 内部持有连接池，管"怎么连数据库"；Session 是工作单元，管"这次改了什么、要不要提交"；
+> 3. 线程安全不同——Engine 可以共享，Session 不行，必须一个线程一个。
+>
+> **加分项**：Session 不是一直占着连接，它只在执行 SQL 时才向 Engine 借，用完立刻还。
 
-**文件**：`chapters/ch03/code/04_use_app_model.py`
+### 2. 什么是"脏检查"？什么时候才发 UPDATE？
 
-**核心代码**：
+> **一句话**：改属性只打标记，commit 时才对比快照决定发不发 SQL。
+>
+> **展开**：
+> 1. 对象从库里查出来时，SQLAlchemy 存了一份属性快照；
+> 2. 你改属性，对象进入 dirty 集合，但此刻没有任何 SQL；
+> 3. commit 时逐字段对比，没变就跳过，变了就发 UPDATE，且只带变化的列。
+>
+> **加分项**：实测过，赋相同的值确实不会发 UPDATE；因为只更新变化列，多人改同一行的不同字段不会互相覆盖。
 
-```python
-from app.models import User          # 模型来自 app/
-from app.db.session import SessionLocal   # 会话来自 app/
+### 3. 什么时候用 ORM，什么时候写原生 SQL？
 
-with SessionLocal() as db:
-    user = db.get(User, 1)
-```
+> **一句话**：常规增删改查用 ORM，复杂分析和批量导入用原生 SQL。
+>
+> **展开**：
+> - 用 ORM：单表操作、简单关联、需要事务管理的业务逻辑；
+> - 用原生 SQL：多表聚合报表、窗口函数、深层子查询、百万级导入。
+>
+> **加分项**：两者可以共存，`session.execute(text("..."))` 就能执行原生 SQL，还带参数绑定。
 
-**怎么跑**：
+---
+
+## 这一章只要记住三句话
+
+1. **Engine 建一次，Session 建很多次**
+2. **模型是类，列用 `mapped_column`，`Mapped[T]` 管类型**
+3. **改属性不发 SQL，commit 才发，而且只发变化的列**
+
+---
+
+## 练习顺序
 
 ```bash
-python chapters/ch03/code/04_use_app_model.py
+cd D:/github_repository/mysql-learning
+export MYSQL_PASSWORD=你的密码
+
+python chapters/ch03/code/01_first_query.py        # 四件套 + 查第一条
+python chapters/ch03/code/02_pymysql_vs_orm.py     # 字典 vs 对象
+python chapters/ch03/code/03_dirty_check.py        # 脏检查实测
+python chapters/ch03/code/04_use_app_model.py      # 工程版对照
 ```
 
-**你会看到**：
+---
 
-```plain
-【1】按主键查（和案例 1 写法一模一样）
-    <User id=1 username='张三' balance=888.00>
+## 学完可以自问三句
 
-【2】查全部
-    <User id=1 username='张三' balance=888.00>
-    <User id=2 username='李四' balance=400.00>
-    <User id=3 username='王五' balance=100.00>
-```
-
-**能学到什么**：
-
-| | 案例 1 | 案例 4 |
-| --- | --- | --- |
-| 模型定义在哪 | 脚本里 | `app/models/user.py` |
-| 引擎从哪来 | 脚本里 `create_engine` | `app/db/engine.py` |
-| 会话从哪来 | `Session(engine)` | `app/db/session.py` |
-| 业务代码要关心这些吗 | 要 | **不要** |
-
-这就是分层的价值：业务代码只写 `db.get(User, 1)`，不关心连接池多大、密码从哪读、`Base` 有几个子类。
-
-**改一改**（2 分钟）：在 `04_use_app_model.py` 里把 `from app.models import User` 换成 `from app.models.user import User`，跑通后再换回来——两条 import 路径都有效，感受一下"包 __init__ 做了什么"。
+- `add` 之后为什么 `user.id` 是 `None`？（第三章末尾讲过，第四章会用）
+- `session.get()` 查不到时返回什么？
+- 为什么改了属性没发 SQL？
 
 ---
 
-# 三、业务场景对话
-
-**Q：查一条数据，用 `session.get()` 还是 `select()`？**
-
-`get()` 只认主键，好处是**先查身份映射**——对象已经在 Session 里就直接返回，不查库。所以"按 id 取"永远用 `get()`。
-
-按非主键条件查（用户名、手机号）只能用 `select()`：
-
-```python
-user = session.execute(
-    select(User).where(User.username == "张三")
-).scalar_one_or_none()
-```
-
-> 💡 用 `scalar_one_or_none()` 而不是 `scalar_one()`：前者查不到返回 `None`，后者直接抛异常。
-
-**Q：公司里为什么禁止在循环里 `session.get()`？**
-
-这是典型的 **N+1 查询**：循环 100 次就是 100 次数据库往返。
-
-```python
-# ⚠️ 别这样
-for uid in user_ids:
-    print(session.get(User, uid).username)
-
-# 💡 一次捞回来
-users = session.scalars(select(User).where(User.id.in_(user_ids))).all()
-```
-
-**Q：ORM 和原生 SQL 怎么分工？**
-
-| 场景 | 用什么 |
-| --- | --- |
-| 常规 CRUD、单表、简单关联 | ORM |
-| 报表、多表聚合、窗口函数 | 原生 SQL（`session.execute(text(...))`） |
-| 百万级批量导入 | 原生 SQL |
-| 需要精确控制执行计划 | 原生 SQL |
-
-一句话：**ORM 替代的是样板 SQL，不是复杂 SQL。**
-
----
-
-# 四、跑不起来怎么办
-
-| 报错 | 原因 | 解决 |
-| --- | --- | --- |
-| `Access denied for user 'root'` | 没设 `MYSQL_PASSWORD` 或密码错 | `export MYSQL_PASSWORD=你的密码` |
-| `Table 'xxx.users' doesn't exist` | 连错库 | 检查 `MYSQL_DATABASE`，本章要 `learn_mysql` |
-| `NoSuchModuleError: Can't load plugin ... mysql.pymysql` | 没装 PyMySQL | `pip install PyMySQL` |
-| `TypeError: 'unsigned' is an invalid keyword argument` | 用了通用 `INTEGER` | 从 `sqlalchemy.dialects.mysql` 导入 |
-| `ArgumentError: Could not parse SQLAlchemy URL` | 密码含 `@ : / #` | 用 `quote_plus()` 编码 |
-| 案例 4 报 `ModuleNotFoundError: No module named 'app'` | 没在仓库根目录跑 | `cd` 到仓库根目录再执行 |
-| 打印出 `<User object at 0x...>` | 没写 `__repr__` | 无关紧要，写完就好看 |
-
----
-
-# 五、自测：3 道面试题
-
-### Q1. Engine 和 Session 的区别是什么？
-
-> **满分回答模板**
->
-> 一句话：**Engine 管连接，Session 管事务和对象**。
->
-> 展开三点：
-> 1. **生命周期不同**——Engine 是进程级的，应用启动建一次，跟着进程走；Session 是请求级或操作级的，用完就关。
-> 2. **职责不同**——Engine 内部持有连接池，负责"怎么连数据库"；Session 是工作单元，负责"这次业务做了哪些操作、要不要提交"。
-> 3. **线程安全性不同**——Engine 线程安全，可以共享；Session 不是，必须一个线程/请求一个。
->
-> 加分项：Session 并不会一直占着连接，它只在执行 SQL 时才向 Engine 借，用完立刻还——这一点和第二章的池化是同一套机制。
-
-### Q2. ORM 的"脏检查"是怎么工作的？什么时候发 UPDATE？
-
-> **满分回答模板**
->
-> 一句话：**改属性只打标记，flush 时才对比快照决定发不发 SQL**。
->
-> 展开：
-> 1. 对象从库里查出来时，SQLAlchemy 保留一份属性快照；
-> 2. 执行 `user.balance = 100`，对象进入 Session 的 dirty 集合，但**此刻没有任何 SQL 发出**；
-> 3. `commit()` / `flush()` 时逐字段对比快照：没变就跳过，变了就生成 UPDATE，且**只带变化的列**。
->
-> 加分项：因为只更新变化列，多人同时改同一行的不同字段不会互相覆盖；但同一字段的并发冲突仍然要靠乐观锁或 `SELECT ... FOR UPDATE` 解决，这是 ORM 管不了的。我们实测过：赋相同的值，flush 时确实不发 UPDATE。
-
-### Q3. 什么时候该用 ORM，什么时候该写原生 SQL？
-
-> **满分回答模板**
->
-> 一句话：**常规 CRUD 用 ORM，复杂分析和批量用原生 SQL**。
->
-> 展开：
-> - 用 ORM：单表增删改查、简单关联、需要事务管理的业务逻辑。收益是类型安全、防注入、可维护。
-> - 用原生 SQL：多表聚合报表、窗口函数、深层子查询、百万级批量导入。收益是可控、可优化、可 `EXPLAIN`。
->
-> 加分项：两者可以共存，不是二选一。SQLAlchemy 里 `session.execute(text("..."))` 就能执行原生 SQL，还带参数绑定。
-
----
-
-# 六、本章总结
-
-**三句话**：
-
-1. Engine 建一次，Session 建很多次
-2. 模型是类，列用 `mapped_column`，`Mapped[T]` 管类型
-3. 改属性不发 SQL，commit 才发，而且只发变化的列
-
-**验收清单**（能不看文档答出来就算过关）：
-
-- [ ] 说出 Engine / Base / Model / Session 各自负责什么
-- [ ] 解释 `session.get(User, 1)` 和 `select(User).where(...)` 的区别
-- [ ] 解释赋相同值为什么不会发 UPDATE
-- [ ] 说出 `server_default` 和 `default` 生成的 DDL 差在哪
-
----
-
-## 速查卡（一周后回来看这里）
+## 速查卡（忘了就翻这一页）
 
 **四件套骨架**
 
 ```python
+from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
+
 engine = create_engine(url, pool_pre_ping=True)     # 全局一个
 
 class Base(DeclarativeBase):                        # 全局一个
@@ -512,9 +411,10 @@ class Base(DeclarativeBase):                        # 全局一个
 class User(Base):                                   # 一张表一个
     __tablename__ = "users"
     id: Mapped[int] = mapped_column(INTEGER(unsigned=True), primary_key=True)
+    username: Mapped[str] = mapped_column(String(50))
 
 with Session(engine) as session:                    # 一次操作一个
-    session.get(User, 1)
+    user = session.get(User, 1)
 ```
 
 **常用操作**
@@ -523,15 +423,9 @@ with Session(engine) as session:                    # 一次操作一个
 | --- | --- |
 | 按主键查 | `session.get(User, 1)`（查不到返回 `None`） |
 | 按条件查 | `session.execute(select(User).where(...)).scalar_one_or_none()` |
-| 批量查 | `session.scalars(select(User).where(User.id.in_(ids))).all()` |
+| 批量查 | `session.scalars(select(User).where(...)).all()` |
 | 改字段 | `user.balance = 100` 然后 `session.commit()` |
 | 撤销 | `session.rollback()` |
-
-**三句话**
-
-1. Engine 建一次，Session 建很多次
-2. 改属性不发 SQL，commit 才发，而且只发变化的列
-3. `server_default` 进 DDL，`default` 只在 Python 侧
 
 **类型对照（最常用的五个）**
 
@@ -543,8 +437,12 @@ with Session(engine) as session:                    # 一次操作一个
 | `bool` | `TINYINT(1)` | `TINYINT(1)` |
 | `datetime` | `DateTime` | `DATETIME` |
 
-**下一步**：第四章用 `session.add()` / `delete()` 写真正的增删改查，并把这些操作封装进 `app/services/`。
+**三句话**
+
+1. Engine 建一次，Session 建很多次
+2. 模型是类，`Mapped[T]` 管类型，`mapped_column` 管列
+3. 改属性不发 SQL，commit 才发
 
 ---
 
-<small>相关：[番外01 -- Alembic 数据库迁移](../../extras/notes/01-Alembic%20数据库迁移.md) · [第二章 -- Python 数据库连接池](../../ch02/notes/Python%20数据库连接池.md)</small>
+<small>相关：[第二章 -- Python 数据库连接池](../../ch02/notes/Python%20数据库连接池.md) · [第四章 -- 增删改查](../../ch04/notes/SQLAlchemy%20ORM%20CRUD.md)</small>
