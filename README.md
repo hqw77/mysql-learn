@@ -23,6 +23,8 @@ mysql_notes/ch01/
 
 ## 学习进度
 
+### 第一部分 · MySQL + ORM + Web（`mysql_notes/`）
+
 | 章节 | 主题 | 状态 | 笔记 | 代码 |
 | --- | --- | --- | --- | --- |
 | 第一章 | MySQL 进阶基础（建表 / JOIN / 事务 / 索引 / 设计 / 运维） | 已完成 | `mysql_notes/ch01/notes/` | `mysql_notes/ch01/code/` + `mysql_notes/ch01/sql/` |
@@ -33,6 +35,18 @@ mysql_notes/ch01/
 | 第六章 | FastAPI + MySQL | 已完成 | `mysql_notes/ch06/notes/` | `mysql_notes/ch06/code/` + `project/app/schemas/`、`project/app/routers/users.py` |
 | 第七章 | 完整项目实战（认证 / 权限 / 事务 / 测试） | 已完成 | `mysql_notes/ch07/notes/` | `mysql_notes/ch07/code/` + `project/app/core/security.py`、`project/app/routers/auth.py`、`project/tests/` |
 | 第八章 | 面试题与项目复盘 | 已完成 | `mysql_notes/ch08/notes/` | — |
+
+### 第三部分 · Redis（`redis/`）
+
+| 章节 | 主题 | 状态 | 笔记 | 代码 |
+| --- | --- | --- | --- | --- |
+| ch01 | Redis 基础：五种类型、过期、Python 操作 | 已完成 | `redis/ch01/notes/` | `redis/ch01/code/`（4 个案例） |
+| ch02 | 缓存设计：Cache-Aside、穿透 / 击穿 / 雪崩、一致性 | 已完成 | `redis/ch02/notes/` | `redis/ch02/code/`（3 个案例） |
+| ch03 | 接入 `project/`：配置、缓存服务、失效、测试 | 待开始 | — | — |
+
+### 第二部分 · FastAPI 深入（`fastapi/`）
+
+待开始,规划见 [fastapi/README.md](fastapi/README.md)。
 
 ## 目录结构
 
@@ -69,11 +83,11 @@ python-backend-notes/
 └── README.md
 ```
 
-> `mysql_notes/`、`fastapi/`、`redis/` 是三条学习线，`project/` 是三条线共用的工程产物。
-> 章节案例通过 `sys.path` 引用 `project/app`，但工程本身不依赖任何笔记目录。
+> `mysql_notes/`、`fastapi/`、`redis/` 是三条学习线,`project/` 是三条线共用的工程产物。
+> 章节案例通过 `sys.path` 引用 `project/app`,但工程本身不依赖任何笔记目录。
 >
 > 工程的使用说明(接口清单、配置项、认证流程、设计说明)见 [project/README.md](project/README.md)。
-> 想读懂这些代码，从 [docs/CODE-READING.md](docs/CODE-READING.md) 开始——按请求链路分 7 站，每站附答案。
+> 想读懂这些代码,从 [docs/CODE-READING.md](docs/CODE-READING.md) 开始——按请求链路分 7 站,每站附答案。
 
 ## 快速开始
 
