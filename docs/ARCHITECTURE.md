@@ -6,7 +6,7 @@
 ## 1. 全貌
 
 ```plain
-┌──────────────────────────── mysql-learning（学习仓库）────────────────────────────┐
+┌───────────────────────── python-backend-notes（学习仓库）─────────────────────────┐
 │                                                                                  │
 │   ┌────────────────────────┐              ┌────────────────────────┐             │
 │   │  project/app/  作品集           │              │  mysql_notes/  学习区      │             │
@@ -200,7 +200,7 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    subgraph repo["mysql-learning"]
+    subgraph repo["python-backend-notes"]
         direction TB
         app["project/app/<br/>作品集"]
         chapters["mysql_notes/<br/>笔记 + 代码 + SQL"]

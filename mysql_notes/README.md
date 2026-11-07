@@ -165,7 +165,7 @@
 本仓库实际采用的划分（与最初设想相比,工程代码收进 `project/app/` 包,章节材料按章归档）：
 
 ```plain
-mysql-learning/
+python-backend-notes/
 ├── mysql_notes/                 # 学习区：每章一个目录
 │   ├── ch01/
 │   │   ├── notes/            # 笔记（.md）

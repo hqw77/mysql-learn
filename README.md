@@ -1,4 +1,4 @@
-# mysql-learning
+# python-backend-notes
 
 Python + MySQL 进阶实战学习仓库。
 

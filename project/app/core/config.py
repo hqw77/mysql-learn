@@ -20,7 +20,7 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    app_name: str = "mysql-learning"
+    app_name: str = "python-backend-notes"
     debug: bool = True
 
     # ---- 认证 ----
