@@ -7,21 +7,21 @@
 
 | 章 | 教程正文 | 篇幅 | 状态 |
 | --- | --- | --- | --- |
-| 第 1 章 | `chapters/ch01/notes/`（8 篇阶段笔记） | 2586 行 | 已有,形态是**学习笔记**不是教程 |
-| 第 2 章 | `chapters/ch02/notes/Python 数据库连接池.md` | 175 行 | 完成 |
-| 第 3 章 | `chapters/ch03/notes/SQLAlchemy ORM 基础.md` | 529 行 | 完成（偏长,下次注意） |
+| 第 1 章 | `mysql_notes/ch01/notes/`（8 篇阶段笔记） | 2586 行 | 已有,形态是**学习笔记**不是教程 |
+| 第 2 章 | `mysql_notes/ch02/notes/Python 数据库连接池.md` | 175 行 | 完成 |
+| 第 3 章 | `mysql_notes/ch03/notes/SQLAlchemy ORM 基础.md` | 529 行 | 完成（偏长,下次注意） |
 | 第 4~8 章 | — | — | 未开始 |
 
 ## 1. 全系列地图
 
 | 章 | 标题 | 要解决的问题 | 篇幅预算 | 练习 | 工程增量 |
 | --- | --- | --- | --- | --- | --- |
-| 1 | MySQL 进阶基础 | SQL 怎么写对、写快 | 已有 | `chapters/ch01/code/` | — |
-| 2 | Python 数据库连接池 | 连接为什么贵、怎么复用 | 175 ✅ | `chapters/ch02/code/` | — |
-| 3 | SQLAlchemy ORM 基础 | ORM 是什么、第一条查询 | 400 | `chapters/ch03/code/` | `project/app/models/user.py` |
-| 4 | SQLAlchemy ORM CRUD | 增删改查怎么写才不土 | 350 | `chapters/ch04/code/` | `project/app/services/` |
-| 5 | SQLAlchemy 进阶 | 关系映射、事务、迁移 | 400 + 番外 | `chapters/ch05/code/` | `project/app/models/role.py` |
-| 6 | FastAPI + MySQL | 把 ORM 暴露成 API | 380 | `chapters/ch06/code/` | `project/app/schemas/`、`project/app/routers/` |
+| 1 | MySQL 进阶基础 | SQL 怎么写对、写快 | 已有 | `mysql_notes/ch01/code/` | — |
+| 2 | Python 数据库连接池 | 连接为什么贵、怎么复用 | 175 ✅ | `mysql_notes/ch02/code/` | — |
+| 3 | SQLAlchemy ORM 基础 | ORM 是什么、第一条查询 | 400 | `mysql_notes/ch03/code/` | `project/app/models/user.py` |
+| 4 | SQLAlchemy ORM CRUD | 增删改查怎么写才不土 | 350 | `mysql_notes/ch04/code/` | `project/app/services/` |
+| 5 | SQLAlchemy 进阶 | 关系映射、事务、迁移 | 400 + 番外 | `mysql_notes/ch05/code/` | `project/app/models/role.py` |
+| 6 | FastAPI + MySQL | 把 ORM 暴露成 API | 380 | `mysql_notes/ch06/code/` | `project/app/schemas/`、`project/app/routers/` |
 | 7 | 完整项目实战 | 注册登录、权限、测试 | 450（或拆 2 篇） | — | 完整 `project/app/` + `tests/` |
 | 8 | 面试题与复盘 | 把知识串成能说出口的话 | 150 | — | — |
 
@@ -52,8 +52,8 @@
 一章写完,仓库里必须同时出现这 5 样,缺一样都不算完成：
 
 ```plain
-① 教程正文      chapters/chNN/notes/<章名>.md
-② 练习代码      chapters/chNN/code/xxx.py        ← 能独立跑,不依赖 app
+① 教程正文      mysql_notes/chNN/notes/<章名>.md
+② 练习代码      mysql_notes/chNN/code/xxx.py        ← 能独立跑,不依赖 app
 ③ 工程增量      project/app/...                     ← 从第 3 章开始的章才有
 ④ 索引更新      README.md 学习进度 + 笔记索引
 ⑤ 验收清单      正文末尾 4 条勾选项
@@ -82,7 +82,7 @@ ch1 SQL 基础
         ↓  你确认方向（跑通了吗、例子是不是你想学的）
 ② 我展开正文（按 DOC-PATTERN 的 7 节结构）
         ↓
-③ 落 chapters/chNN/code 代码,真跑一遍,把真实输出贴进文档
+③ 落 mysql_notes/chNN/code 代码,真跑一遍,把真实输出贴进文档
         ↓
 ④ 更新 README 进度、必要时更新 ARCHITECTURE
         ↓  你验收（勾完 4 条清单）
@@ -115,7 +115,7 @@ ch1 SQL 基础
 
 ## 7. 第三章的收口
 
-第三章目前的状态：正文完成、`chapters/ch03/code/mini_orm.py` 可跑、`project/app/models/user.py` 已映射真实表、`alembic check` 无差异。
+第三章目前的状态：正文完成、`mysql_notes/ch03/code/mini_orm.py` 可跑、`project/app/models/user.py` 已映射真实表、`alembic check` 无差异。
 
 **验收清单（4 条,自测用）：**
 

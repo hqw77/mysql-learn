@@ -1,7 +1,7 @@
 # 项目架构
 
-> 更新时间：2026-11-04 · 章节结构改为 `chapters/chNN/{notes,code}`
-> 说明：`project/app/` 是作品集（第 4 章起长业务代码）,`chapters/` 是学习轨迹,两者互不 import。
+> 更新时间：2026-11-04 · 章节结构改为 `mysql_notes/chNN/{notes,code}`
+> 说明：`project/app/` 是作品集（第 4 章起长业务代码）,`mysql_notes/` 是学习轨迹,两者互不 import。
 
 ## 1. 全貌
 
@@ -9,7 +9,7 @@
 ┌──────────────────────────── mysql-learning（学习仓库）────────────────────────────┐
 │                                                                                  │
 │   ┌────────────────────────┐              ┌────────────────────────┐             │
-│   │  project/app/  作品集           │              │  chapters/  学习区      │             │
+│   │  project/app/  作品集           │              │  mysql_notes/  学习区      │             │
 │   │  FastAPI 分层应用       │              │  每章一个目录            │             │
 │   │  （第 4 章起长肉）      │              │  chNN/notes + chNN/code │             │
 │   └───────────┬────────────┘              └───────────┬────────────┘             │
@@ -106,7 +106,7 @@
 
 ## 4. 两条数据访问路径
 
-仓库里同时存在两套访问方式,这是刻意的：`chapters/*/code/` 用裸驱动理解原理,`project/app/` 用 ORM 做工程。
+仓库里同时存在两套访问方式,这是刻意的：`mysql_notes/*/code/` 用裸驱动理解原理,`project/app/` 用 ORM 做工程。
 
 | 维度 | practice 路径 | app 路径 |
 | --- | --- | --- |
@@ -114,7 +114,7 @@
 | 连接池 | 手写 `PooledDB(...)` | `create_engine` 自带 `QueuePool` |
 | 池参数 | `mincached` / `maxcached` / `maxconnections` / `blocking` / `ping` | `pool_size` / `max_overflow` / `pool_recycle` / `pool_pre_ping` |
 | 事务 | `conn.commit()` / `rollback()` | `Session.commit()` / `rollback()` |
-| 代表文件 | `chapters/ch02/code/pool.py` | `project/app/db/engine.py` |
+| 代表文件 | `mysql_notes/ch02/code/pool.py` | `project/app/db/engine.py` |
 
 第二章的结论在这里直接复用：**`close()` 在池化语境下是归还,不是断开**。SQLAlchemy 的 `Session.close()` 同理,归还连接但不销毁池。
 
@@ -203,7 +203,7 @@ flowchart LR
     subgraph repo["mysql-learning"]
         direction TB
         app["project/app/<br/>作品集"]
-        chapters["chapters/<br/>笔记 + 代码 + SQL"]
+        chapters["mysql_notes/<br/>笔记 + 代码 + SQL"]
     end
 
     app -->|SQLAlchemy| mysql[("MySQL")]
