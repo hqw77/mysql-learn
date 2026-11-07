@@ -24,7 +24,7 @@ def register(payload: RegisterIn, db: Session = Depends(get_db)) -> UserOut:
     return auth_service.register(db, payload.username, payload.phone, payload.password)
 
 
-@router.post("/login", response_model=TokenOut, summary="登录，返回令牌")
+@router.post("/login", response_model=TokenOut, summary="登录,返回令牌")
 def login(payload: LoginIn, db: Session = Depends(get_db)) -> TokenOut:
     user = auth_service.authenticate(db, payload.username, payload.password)
     return TokenOut(

@@ -1,8 +1,8 @@
 """第七章 · 案例 4：转账 —— 事务实战。
 
 学到什么：
-    转账要改两行数据，必须在一个事务里：要么都成功，要么都回滚。
-    余额不足时抛业务异常，两边余额都不能变。
+    转账要改两行数据,必须在一个事务里：要么都成功,要么都回滚。
+    余额不足时抛业务异常,两边余额都不能变。
 
 怎么跑：
     export MYSQL_PASSWORD=你的密码
@@ -48,7 +48,7 @@ if __name__ == "__main__":
                 json={"username": name, "phone": f"{phone_prefix}{STAMP:08d}", "password": "secret123"},
             )
             uid = r.json()["id"]
-            # 注册接口不开放余额设置，直接改库（模拟"已有余额"）
+            # 注册接口不开放余额设置,直接改库（模拟"已有余额"）
             with SessionLocal() as db:
                 u = db.get(User, uid)
                 u.balance = Decimal(balance)
@@ -70,13 +70,13 @@ if __name__ == "__main__":
         print("    响应:", r.json())
         print(f"    甲的余额: {balance_of(a_id)}   乙的余额: {balance_of(b_id)}")
 
-        show("③ 甲再转 1000（余额不足）→ 400，且两边都不变")
+        show("③ 甲再转 1000（余额不足）→ 400,且两边都不变")
         before_a, before_b = balance_of(a_id), balance_of(b_id)
         r = client.post("/transfer", json={"to_user_id": b_id, "amount": "1000.00"}, headers=headers)
         print("    状态码:", r.status_code, " 响应:", r.json())
         print(f"    甲: {before_a} → {balance_of(a_id)}")
         print(f"    乙: {before_b} → {balance_of(b_id)}")
-        print("    → 业务校验失败时根本没进 UPDATE，两边余额纹丝不动")
+        print("    → 业务校验失败时根本没进 UPDATE,两边余额纹丝不动")
 
         show("④ 不带令牌转账 → 401")
         r = client.post("/transfer", json={"to_user_id": b_id, "amount": "1.00"})

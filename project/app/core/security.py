@@ -1,8 +1,8 @@
 """安全相关的工具：密码哈希与 JWT 令牌。
 
 两个原则：
-    1. 密码只存哈希，永远不存明文，也不可逆；
-    2. 令牌只存签名后的字符串，服务端不保存会话状态。
+    1. 密码只存哈希,永远不存明文,也不可逆；
+    2. 令牌只存签名后的字符串,服务端不保存会话状态。
 """
 
 from datetime import datetime, timedelta, timezone
@@ -13,7 +13,7 @@ from argon2.exceptions import InvalidHashError, VerificationError, VerifyMismatc
 
 from app.core.config import settings
 
-# argon2 自带盐值，同一密码每次哈希结果都不同
+# argon2 自带盐值,同一密码每次哈希结果都不同
 _hasher = PasswordHasher()
 
 

@@ -1,7 +1,7 @@
-"""FastAPI 依赖集合。router 从这里导入依赖，不直接碰 db 层。
+"""FastAPI 依赖集合。router 从这里导入依赖,不直接碰 db 层。
 
-除了数据库会话，这里还提供两个鉴权依赖：
-    get_current_user  从请求头里取令牌，解析出当前用户
+除了数据库会话,这里还提供两个鉴权依赖：
+    get_current_user  从请求头里取令牌,解析出当前用户
     require_role      要求当前用户具备某个角色
 """
 
@@ -15,7 +15,7 @@ from app.core.security import decode_access_token
 from app.db.session import get_db
 from app.models import User
 
-# auto_error=False：没带令牌时不抛框架默认错误，交给下面的函数统一处理
+# auto_error=False：没带令牌时不抛框架默认错误,交给下面的函数统一处理
 bearer_scheme = HTTPBearer(auto_error=False)
 
 
@@ -25,7 +25,7 @@ def get_current_user(
 ) -> User:
     """从 Authorization: Bearer <token> 中解析当前用户。
 
-    令牌缺失、无效、过期，或用户不存在时，统一返回 401。
+    令牌缺失、无效、过期,或用户不存在时,统一返回 401。
     """
     if credentials is None:
         raise UnauthorizedError("缺少访问令牌")

@@ -9,13 +9,13 @@ from urllib.parse import quote_plus
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-# project/ 目录：config.py 在 project/app/core/ 下，往上三层
+# project/ 目录：config.py 在 project/app/core/ 下,往上三层
 PROJECT_DIR = Path(__file__).resolve().parents[2]
 
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=PROJECT_DIR / ".env",     # 💡 用绝对路径，从任何工作目录运行都能读到
+        env_file=PROJECT_DIR / ".env",     # 💡 用绝对路径,从任何工作目录运行都能读到
         env_file_encoding="utf-8",
         extra="ignore",
     )

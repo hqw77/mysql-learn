@@ -100,7 +100,7 @@ mysql-learning/
 │   ├── alembic.ini
 │   ├── requirements.txt
 │   └── .env.example
-├── docs/                         # 架构说明 · 教程规划 · 文档排版模式
+├── docs/                         # 架构说明 · 教程规划 · 文档排版模式 · 代码导读
 └── README.md
 ```
 
@@ -108,6 +108,7 @@ mysql-learning/
 > 章节案例会通过 `sys.path` 引用 `project/app`,但工程本身不依赖 `chapters/`。
 >
 > 工程的使用说明(接口清单、配置项、认证流程、设计说明)见 [project/README.md](project/README.md)。
+> 想读懂这些代码，从 [docs/CODE-READING.md](docs/CODE-READING.md) 开始——按请求链路分 7 站，每站附答案。
 
 ## 快速开始
 
@@ -140,7 +141,7 @@ cp .env.example .env
 ### 4. 启动应用
 
 ```bash
-cd project                      # ⚠️ 工程在 project/ 下，从这里启动
+cd project                      # ⚠️ 工程在 project/ 下,从这里启动
 uvicorn app.main:app --reload
 ```
 

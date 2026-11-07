@@ -1,7 +1,7 @@
 """pytest 公共配置。
 
 两件事：
-    1. 把仓库根目录加入 sys.path，测试里才能 import app；
+    1. 把仓库根目录加入 sys.path,测试里才能 import app；
     2. 提供 client 与 temp_user 两个 fixture。
 """
 
@@ -24,14 +24,14 @@ from app.models import User  # noqa: E402
 
 @pytest.fixture
 def client():
-    """不启动服务器，直接把请求打进应用。"""
+    """不启动服务器,直接把请求打进应用。"""
     with TestClient(app) as c:
         yield c
 
 
 @pytest.fixture
 def temp_user(client):
-    """注册一个临时用户，测试结束后自动删除。"""
+    """注册一个临时用户,测试结束后自动删除。"""
     stamp = int(time.time() * 1000) % 10**8
     username = f"t{stamp}"
     phone = f"1{stamp:010d}"

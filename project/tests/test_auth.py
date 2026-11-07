@@ -9,7 +9,7 @@ from app.models import User
 
 
 def test_register_success(client):
-    """注册成功返回 201，且响应里不含密码字段。"""
+    """注册成功返回 201,且响应里不含密码字段。"""
     import time
 
     stamp = int(time.time() * 1000) % 10**8
@@ -45,7 +45,7 @@ def test_register_duplicate(client, temp_user):
 
 
 def test_register_weak_password(client):
-    """密码过短由 schema 拦下，返回 422。"""
+    """密码过短由 schema 拦下,返回 422。"""
     import time
 
     stamp = int(time.time() * 1000) % 10**8
@@ -77,13 +77,13 @@ def test_login_wrong_password(client, temp_user):
 
 
 def test_me_without_token(client):
-    """不带令牌访问受保护接口，返回 401。"""
+    """不带令牌访问受保护接口,返回 401。"""
     r = client.get("/auth/me")
     assert r.status_code == 401
 
 
 def test_me_with_token(client, temp_user):
-    """带令牌访问，返回当前用户信息。"""
+    """带令牌访问,返回当前用户信息。"""
     login = client.post(
         "/auth/login",
         json={"username": temp_user["username"], "password": temp_user["password"]},
@@ -96,7 +96,7 @@ def test_me_with_token(client, temp_user):
 
 
 def test_assign_role_forbidden(client, temp_user):
-    """普通用户分配角色，返回 403。"""
+    """普通用户分配角色,返回 403。"""
     login = client.post(
         "/auth/login",
         json={"username": temp_user["username"], "password": temp_user["password"]},

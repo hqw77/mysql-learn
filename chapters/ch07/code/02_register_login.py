@@ -2,7 +2,7 @@
 
 学到什么：
     注册：201；用户名重复：409；登录成功：200 + 令牌；密码错误：401。
-    错误提示不区分"用户不存在"和"密码错误"，避免被用来枚举账号。
+    错误提示不区分"用户不存在"和"密码错误",避免被用来枚举账号。
 
 怎么跑：
     export MYSQL_PASSWORD=你的密码
@@ -76,7 +76,7 @@ if __name__ == "__main__":
 
         r = client.post("/auth/login", json={"username": f"nobody{STAMP}", "password": "whatever"})
         print("    用户名不存在  :", r.status_code, " 响应:", r.json())
-        print("    → 两条提示完全一样，攻击者无法判断账号是否存在")
+        print("    → 两条提示完全一样,攻击者无法判断账号是否存在")
 
         show("⑥ 清理测试数据")
         with SessionLocal() as db:

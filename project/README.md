@@ -1,15 +1,15 @@
 # 用户管理系统 API
 
-基于 **FastAPI + SQLAlchemy 2.0 + MySQL 8.0** 的用户管理后端，提供注册登录、用户增删改查、角色权限控制与转账事务。
+基于 **FastAPI + SQLAlchemy 2.0 + MySQL 8.0** 的用户管理后端,提供注册登录、用户增删改查、角色权限控制与转账事务。
 
 ## 功能
 
 - **认证**：注册、登录、JWT 令牌签发与校验
-- **密码安全**：argon2 哈希存储，明文不落库
+- **密码安全**：argon2 哈希存储,明文不落库
 - **用户管理**：列表（分页）、详情、创建、改余额、软删除
-- **角色权限**：用户与角色多对多，接口按角色鉴权（401 / 403 区分）
-- **事务**：转账在同一事务内扣加，任一步失败整体回滚
-- **测试**：8 个接口用例，覆盖认证与权限分支
+- **角色权限**：用户与角色多对多,接口按角色鉴权（401 / 403 区分）
+- **事务**：转账在同一事务内扣加,任一步失败整体回滚
+- **测试**：8 个接口用例,覆盖认证与权限分支
 
 ## 技术栈
 
@@ -37,7 +37,7 @@ project/
 │   ├── core/
 │   │   ├── config.py         # 配置（读 .env）
 │   │   ├── security.py       # 密码哈希与 JWT
-│   │   └── exceptions.py     # 业务异常，自带状态码
+│   │   └── exceptions.py     # 业务异常,自带状态码
 │   ├── db/
 │   │   ├── base.py           # DeclarativeBase
 │   │   ├── engine.py         # Engine + 连接池
@@ -67,7 +67,7 @@ pip install -r requirements.txt
 
 ```bash
 cp .env.example .env
-# 编辑 .env，填入真实的数据库密码
+# 编辑 .env,填入真实的数据库密码
 ```
 
 可用配置项：
@@ -81,9 +81,9 @@ cp .env.example .env
 | `MYSQL_DATABASE` | `learn_mysql` | 数据库名 |
 | `DB_POOL_SIZE` | `5` | 连接池常驻连接数 |
 | `DB_MAX_OVERFLOW` | `10` | 高峰允许超出的连接数 |
-| `DB_POOL_RECYCLE` | `3600` | 连接存活秒数，到时重建 |
+| `DB_POOL_RECYCLE` | `3600` | 连接存活秒数,到时重建 |
 | `DB_ECHO` | `false` | 是否打印 SQL |
-| `JWT_SECRET` | dev 默认值 | 签名密钥，**生产必须替换**，长度 ≥ 32 字节 |
+| `JWT_SECRET` | dev 默认值 | 签名密钥,**生产必须替换**,长度 ≥ 32 字节 |
 | `JWT_EXPIRE_MINUTES` | `60` | 令牌有效期 |
 
 ### 3. 建库与迁移
@@ -107,8 +107,8 @@ uvicorn app.main:app --reload
 | --- | --- | --- | --- |
 | GET | `/health` | 公开 | 进程存活探测 |
 | GET | `/health/db` | 公开 | 数据库连通探测 |
-| POST | `/auth/register` | 公开 | 注册，返回用户信息 |
-| POST | `/auth/login` | 公开 | 登录，返回 JWT |
+| POST | `/auth/register` | 公开 | 注册,返回用户信息 |
+| POST | `/auth/login` | 公开 | 登录,返回 JWT |
 | GET | `/auth/me` | 登录 | 当前用户信息与角色 |
 | GET | `/users` | 公开 | 分页列表（自动过滤软删） |
 | GET | `/users/{id}` | 公开 | 用户详情 |
@@ -127,7 +127,7 @@ curl -X POST http://127.0.0.1:8000/auth/register \
   -H "Content-Type: application/json" \
   -d '{"username":"demo","phone":"13800000000","password":"secret123"}'
 
-# 2. 登录，拿到令牌
+# 2. 登录,拿到令牌
 curl -X POST http://127.0.0.1:8000/auth/login \
   -H "Content-Type: application/json" \
   -d '{"username":"demo","password":"secret123"}'
@@ -145,7 +145,7 @@ curl http://127.0.0.1:8000/auth/me \
 | `users` | 用户：用户名、手机号、余额、密码哈希、软删标记 |
 | `orders` | 订单：演示一对多关系（`user_id` 逻辑外键） |
 | `roles` | 角色：admin / editor / viewer |
-| `user_roles` | 用户-角色关联表，联合主键防重复 |
+| `user_roles` | 用户-角色关联表,联合主键防重复 |
 
 ## 测试
 
@@ -166,11 +166,11 @@ tests/test_auth.py::test_assign_role_forbidden PASSED
 8 passed
 ```
 
-测试直接连开发库，用例通过 `temp_user` fixture 自建自清，不会污染数据。
+测试直接连开发库,用例通过 `temp_user` fixture 自建自清,不会污染数据。
 
 ## 设计说明
 
-**分层**：`routers → services → models`，单向依赖。
+**分层**：`routers → services → models`,单向依赖。
 
 | 层 | 负责 | 不负责 |
 | --- | --- | --- |
@@ -178,7 +178,7 @@ tests/test_auth.py::test_assign_role_forbidden PASSED
 | `services/` | 业务规则、事务边界、抛业务异常 | 感知 HTTP |
 | `models/` | 表结构映射与关系 | 业务判断 |
 
-**异常映射**：service 抛 `AppError` 子类，`main.py` 统一转成 HTTP 响应。
+**异常映射**：service 抛 `AppError` 子类,`main.py` 统一转成 HTTP 响应。
 
 | 异常 | 状态码 |
 | --- | --- |
@@ -188,14 +188,14 @@ tests/test_auth.py::test_assign_role_forbidden PASSED
 | `ForbiddenError` | 403 |
 | `AppError` | 400 |
 
-**软删除**：`users.is_deleted` 置 1，行保留；列表查询统一在 service 层过滤。
+**软删除**：`users.is_deleted` 置 1,行保留；列表查询统一在 service 层过滤。
 
-**事务**：转账只 `commit()` 一次，异常时 `rollback()`，保证两边余额一致。
+**事务**：转账只 `commit()` 一次,异常时 `rollback()`,保证两边余额一致。
 
-**迁移**：所有表结构变更走 Alembic，不使用 `create_all`；`env.py` 中的 `include_object` 会忽略库中未建模的表，防止误生成 `DROP TABLE`。
+**迁移**：所有表结构变更走 Alembic,不使用 `create_all`；`env.py` 中的 `include_object` 会忽略库中未建模的表,防止误生成 `DROP TABLE`。
 
 ## 已知限制
 
-- 转账使用"读出来改属性"的写法，并发下存在丢更新风险，生产环境应改用 `with_for_update()` 或原子 SQL。
-- 测试直接连开发库，未使用独立测试库。
-- JWT 无状态，暂不支持主动失效（如改密码后踢下线）。
+- 转账使用"读出来改属性"的写法,并发下存在丢更新风险,生产环境应改用 `with_for_update()` 或原子 SQL。
+- 测试直接连开发库,未使用独立测试库。
+- JWT 无状态,暂不支持主动失效（如改密码后踢下线）。

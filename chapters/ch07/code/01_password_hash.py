@@ -1,14 +1,14 @@
-"""第七章 · 案例 1：密码为什么要哈希，哈希长什么样。
+"""第七章 · 案例 1：密码为什么要哈希,哈希长什么样。
 
 学到什么：
-    1. 同一密码哈希两次，结果不同（因为自带随机盐）
-    2. 哈希不可逆，无法从哈希还原出明文
-    3. 校验时不比对字符串，而是用 verify 函数
+    1. 同一密码哈希两次,结果不同（因为自带随机盐）
+    2. 哈希不可逆,无法从哈希还原出明文
+    3. 校验时不比对字符串,而是用 verify 函数
 
 怎么跑：
     python chapters/ch07/code/01_password_hash.py
 
-不连数据库，纯本地计算。
+不连数据库,纯本地计算。
 """
 
 import sys
@@ -27,7 +27,7 @@ def show(title: str) -> None:
 if __name__ == "__main__":
     raw = "secret123"
 
-    show("① 同一个密码，哈希两次")
+    show("① 同一个密码,哈希两次")
     h1 = hash_password(raw)
     h2 = hash_password(raw)
     print("    第一次:", h1)
@@ -43,7 +43,7 @@ if __name__ == "__main__":
     print("    参数    :", parts[3], " (内存 64MB,迭代 3 次,并行 4 路)")
     print("    盐值    :", parts[4])
     print("    哈希值  :", parts[5])
-    print("    盐和参数都写在哈希串里，所以不需要单独存盐字段")
+    print("    盐和参数都写在哈希串里,所以不需要单独存盐字段")
 
     show("③ 校验：正确密码 vs 错误密码")
     print("    正确密码 secret123 →", verify_password("secret123", h1))
@@ -53,7 +53,7 @@ if __name__ == "__main__":
     show("④ 哈希不可逆")
     print("    哈希串长度:", len(h1))
     print("    明文长度  :", len(raw))
-    print("    → 哈希后长度固定且远大于明文，无法反推出原文")
+    print("    → 哈希后长度固定且远大于明文,无法反推出原文")
 
     show("⑤ 耗时：故意让暴力破解变慢")
     start = time.perf_counter()
@@ -61,8 +61,8 @@ if __name__ == "__main__":
         hash_password(raw)
     cost = (time.perf_counter() - start) / 5
     print(f"    单次哈希约 {cost * 1000:.1f} ms")
-    print("    → 正常登录只算一次，感觉不到；但暴力猜测每秒只能试几十次")
+    print("    → 正常登录只算一次,感觉不到；但暴力猜测每秒只能试几十次")
 
     show("⑥ 空哈希（历史数据）会怎样")
     print("    verify_password('secret123', '') →", verify_password("secret123", ""))
-    print("    → 返回 False，不抛异常。老数据没有密码时登录会被拒绝")
+    print("    → 返回 False,不抛异常。老数据没有密码时登录会被拒绝")

@@ -6,7 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class RegisterIn(BaseModel):
-    """注册入参。密码只在前端到后端这一路上出现一次，之后只存哈希。"""
+    """注册入参。密码只在前端到后端这一路上出现一次,之后只存哈希。"""
 
     username: str = Field(min_length=2, max_length=50, description="用户名,2~50 字符")
     phone: str = Field(pattern=r"^1\d{10}$", description="手机号,11 位,1 开头")
